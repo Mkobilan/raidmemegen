@@ -210,15 +210,20 @@ if (matchedMeme) {
       
       {/* Input Form */}
       <div className="max-w-md mx-auto bg-gray-800 p-6 rounded-lg mb-8">
-        <select
-          value={game}
-          onChange={(e) => { setGame(e.target.value); setRaid(''); }}
-          className="w-full p-2 mb-4 bg-gray-700 rounded text-white"
-        >
-          <option value="">Select Game</option>
-          <option value="Destiny 2">Destiny 2</option>
-          <option value="World of Warcraft">World of Warcraft</option>
-        </select>
+       <select
+  value={game}
+  onChange={(e) => { setGame(e.target.value); setRaid(''); }}
+  className="w-full p-2 mb-4 bg-gray-700 rounded text-white"
+>
+  <option value="">Select Game</option>
+  <option value="Destiny 2">Destiny 2</option>
+  <option value="World of Warcraft">World of Warcraft</option>
+  <option value="Arc Raiders">Arc Raiders</option>
+  <option value="Helldivers 2">Helldivers 2</option>
+  <option value="Final Fantasy XIV">Final Fantasy XIV</option>
+  <option value="Path of Exile 2">Path of Exile 2</option>
+  <option value="Monster Hunter Wilds">Monster Hunter Wilds</option>
+</select>
         
         <select
           value={raid}

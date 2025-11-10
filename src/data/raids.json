@@ -4,100 +4,355 @@
     "raid": "Last Wish",
     "phases": [
       {
-        "name": "Vault Encounter",
-        "baseTemplate": "Player [role] must [action] the [target] while avoiding [hazard]. Meme: [quip]",
-        "roles": ["DPS", "Healer", "Meme Lord", "Tank"],
-        "actions": ["aggro adds", "spam grenades", "cheese from ledge", "swap symbols"],
-        "targets": ["symbol plates", "Riven's eyes", "Taken blobs", "that one guy who DC'd"],
-        "hazards": ["laser beams", "darkness phase", "bad comms", "LFG toxicity"],
-        "quips": ["'This is fine' – your fireteam", "Wipe? Nah, practice run", "GO GO GO but actually wait", "Blame Taniks, the Schemeless"]
-      },
-      {
-        "name": "Maze",
-        "baseTemplate": "Navigate the [path] by [action] and calling out [target]. Meme: [quip]",
-        "roles": ["Caller", "Runner", "Meme Distraction", "Safeguard"],
-        "actions": ["wall jumps", "darkness dodges", "team sync calls", "panic emotes"],
-        "targets": ["correct door", "wrong traps", "ghost memes", "Riven clones"],
-        "hazards": ["time pressure", "confusing layouts", "mic feedback", "screams"],
-        "quips": ["'Left or right? Yes.'", "Maze? More like amaze-balls fail", "If lost, blame the map", "Portal gun when?"]
-      },
-      {
         "name": "Kalli",
-        "baseTemplate": "[role] focuses on [action] adds while dodging [hazard]. Meme: [quip]",
-        "roles": ["Add Clear", "DPS Queen", "Juke Master", "Buff Bot"],
-        "actions": ["AOE bursts", "priority targets", "dance mechanics", "super spam"],
-        "targets": ["ogres", "witches", "taken knights", "your own feet"],
-        "hazards": ["poison clouds", "melee swings", "phase transitions", "overconfident LFG"],
-        "quips": ["Kalli who? We call her 'Wipe-lli'", "Hex? More like 'ex' your chances", "Dodge or die trying—anime style", "Buffs? We need prayers"]
+        "baseTemplate": "[role] calls [action] on [target] while avoiding [hazard]. Meme: [quip]",
+        "roles": ["Plate Caller", "Well DPS", "Add Clear", "Meme Bait"],
+        "actions": ["plate stomps", "well shots", "add bursts", "panic revives"],
+        "targets": ["Kalli’s plates", "the Well", "Taken thralls", "your own foot"],
+        "hazards": ["plate wipes", "well collapse", "taken blight", "friendly grenades"],
+        "quips": ["'One more plate!'", "Well of Radiance? Well of Regret", "Kalli who?", "Plate tectonics = wipe tectonics"]
       },
       {
         "name": "Shuro Chi",
-        "baseTemplate": "Burn the adds with [action] and stay on [target] platforms. Meme: [quip]",
-        "roles": ["Platformer", "Burner", "Echo Caller", "Meme Anchor"],
-        "actions": ["rocket volleys", "echo kills", "platform hops", "group heals"],
-        "targets": ["eye beacons", "ogre rush", "wrong echoes", "falling friends"],
-        "hazards": ["void pulls", "add swarms", "platform swaps", "tilt-induced rage"],
-        "quips": ["Shuro Chi? Sounds like 'sure, we'll wipe'", "Echo location: Your tears", "Platforming pro? In theory", "One more phase—famous last words"]
+        "baseTemplate": "[role] sings [action] to [target] under [hazard]. Meme: [quip]",
+        "roles": ["Song Leader", "Puzzle Solver", "Add Sniper", "Meme Choir"],
+        "actions": ["song notes", "puzzle clicks", "add snipes", "off-key screams"],
+        "targets": ["the crystal", "puzzle tiles", "adds", "your headset"],
+        "hazards": ["song miss", "puzzle lockout", "arrow rain", "discord lag"],
+        "quips": ["Shuro Chi? Shuro Bye", "Song stuck in my head… and the raid", "Puzzle? More like puzzle-ement", "One wrong note = one wrong wipe"]
+      },
+      {
+        "name": "Morgeth",
+        "baseTemplate": "[role] traps [action] on [target] before [hazard] hits. Meme: [quip]",
+        "roles": ["Trap Setter", "Orb Runner", "Add Clear", "Meme Tank"],
+        "actions": ["trap placement", "orb grabs", "add bursts", "panic supers"],
+        "targets": ["Morgeth’s axe", "orbs", "taken goblins", "your own super"],
+        "hazards": ["axe swing", "orb decay", "taken strength", "super clash"],
+        "quips": ["Morgeth? More death", "Trap the ogre, trap the vibe", "Orb? More like orb-ituary", "Axe me a question… I’m dead"]
+      },
+      {
+        "name": "Vault",
+        "baseTemplate": "[role] guards [action] while [target] rotates [hazard]. Meme: [quip]",
+        "roles": ["Eye Shooter", "Runner", "Guard", "Meme Knight"],
+        "actions": ["eye shots", "pennant runs", "guard calls", "panic teleports"],
+        "targets": ["eyes", "pennants", "knights", "your own portal"],
+        "hazards": ["eye beams", "pennant miss", "knight charge", "teleport lag"],
+        "quips": ["Vault? More like fault", "Eye see you… dying", "Runner? More like stunner", "Knight in shining wipe"]
       },
       {
         "name": "Riven",
-        "baseTemplate": "Final [action] on Riven while handling [target] gaze. Meme: [quip]",
-        "roles": ["Gaze Breaker", "DPS Finisher", "Revive Hero", "Victory Meme"],
-        "actions": ["heart shots", "gaze breaks", "super clutch", "cheese strat"],
-        "targets": ["Riven's heart", "gaze beams", "thrall adds", "loot chest"],
-        "hazards": ["one-shots", "darkness aura", "bad positioning", "post-raid salt"],
-        "quips": ["Riven? Riven us wrong", "Gaze into the abyss... and wipe", "Heartbreaker? Nah, raidbreaker", "GG—now for the emblem flex"]
+        "baseTemplate": "Final [action] on [target] eyes while cleansing [hazard]. Meme: [quip]",
+        "roles": ["Eye Caller", "Tentacle DPS", "Cleanser", "Meme Queen"],
+        "actions": ["eye calls", "tentacle bursts", "cleanse runs", "cheese strats"],
+        "targets": ["Riven’s eyes", "tentacles", "taken strength", "the cheese spot"],
+        "hazards": ["eye stun", "tentacle slam", "strength stack", "cheese fail"],
+        "quips": ["Riven? R.I.P.-en", "Eye on the prize… the wipe", "Tentacle? More like ten-tickle", "Cheese the dragon, cheese the plan"]
       }
     ]
   },
   {
     "game": "World of Warcraft",
-    "raid": "Vault of the Incarnates (Mythic)",
+    "raid": "Vaults of Incarnation",
     "phases": [
       {
         "name": "Eranog",
-        "baseTemplate": "Tank [action] the orbs away from [target] while [role] interrupts. Meme: [quip]",
-        "roles": ["Tank", "Interrupt Queen", "Orb Juggler", "Meme Healer"],
-        "actions": ["soak orbs", "interrupt casts", "spread mechanics", "panic cleanse"],
-        "targets": ["raid stack", "boss adds", "fiery orbs", "your shadow priest"],
-        "hazards": ["molten spikes", "kickback damage", "interrupt fail", "LFR habits"],
-        "quips": ["Eranog? More like 'error not'", "Orb daddy issues", "Interrupt or perish—classic WoW", "Tank swap? Like musical chairs"]
+        "baseTemplate": "[role] soaks [action] on [target] while dodging [hazard]. Meme: [quip]",
+        "roles": ["Soaker", "Add Clear", "Healer", "Meme Tank"],
+        "actions": ["flame soaks", "add bursts", "heal bombs", "panic bubbles"],
+        "targets": ["flame pools", "adds", "the raid", "your own boots"],
+        "hazards": ["flame spread", "add explosion", "heal overload", "lag spike"],
+        "quips": ["Eranog? Era-gone", "Soak it up… like a sponge of death", "Flame on? Flame gone", "Tank the heat, tank the wipe"]
       },
       {
         "name": "Terros",
-        "baseTemplate": "[role] stacks for [action] while avoiding [hazard] cracks. Meme: [quip]",
-        "roles": ["Stack Captain", "Crack Dodger", "Res Healer", "Mythic Meme"],
-        "actions": ["stack heals", "dodge cracks", "shard soaks", "rez chain"],
-        "targets": ["safe zones", "crystal shards", "boss wake", "dead DPS"],
-        "hazards": ["earth spikes", "wake waves", "stack bombs", "tilt timers"],
-        "quips": ["Terros? Terror-ific wipes", "Stack and pray", "Crack addict? No, mechanic", "One rez left—hold my beer"]
+        "baseTemplate": "[role] breaks [action] on [target] before [hazard] erupts. Meme: [quip]",
+        "roles": ["Breaker", "Kiter", "DPS", "Meme Runner"],
+        "actions": ["rock breaks", "kite paths", "dps bursts", "panic sprints"],
+        "targets": ["rock pillars", "the boss", "your feet", "the pull timer"],
+        "hazards": ["rock fall", "kite fail", "dps check", "pull aggro"],
+        "quips": ["Terros? Terror-ble", "Break the rock, break the raid", "Kite? More like bite", "Pillar of salt… and tears"]
       },
       {
         "name": "The Primal Council",
-        "baseTemplate": "Rotate [action] on elements and call [target] swaps. Meme: [quip]",
-        "roles": ["Element Caller", "Swap Master", "Debuff Sponge", "Council Clown"],
-        "actions": ["element soaks", "debuff swaps", "mark calls", "meme rotations"],
-        "targets": ["fire/ice zones", "wrong elements", "council adds", "your rogue"],
-        "hazards": ["element clash", "debuff overload", "swap confusion", "recount drama"],
-        "quips": ["Council? More like counsel to wipe", "Elemental my ass—fire it up", "Swap like it's hot", "Primal? Primitive fails"]
-      },
-      {
-        "name": "Sennarth",
-        "baseTemplate": "Web [role] breaks [target] while [action] adds. Meme: [quip]",
-        "roles": ["Web Breaker", "Add DPS", "Kite Queen", "Silk Meme"],
-        "actions": ["web slashes", "add bursts", "kite paths", "group escapes"],
-        "targets": ["web strands", "spider adds", "silk traps", "stranded tanks"],
-        "hazards": ["web immobilize", "add swarms", "phase transitions", "Arachnophobia.exe"],
-        "quips": ["Sennarth? Senna-rthritis from wipes", "Web of lies—and deaths", "Break free? Easier said", "Spider-Man? More like wipe-der-man"]
+        "baseTemplate": "[role] interrupts [action] on [target] during [hazard]. Meme: [quip]",
+        "roles": ["Interrupter", "Stacker", "Healer", "Meme Council"],
+        "actions": ["interrupt rotations", "stack markers", "heal bursts", "panic kicks"],
+        "targets": ["casters", "stack markers", "the raid", "your kick key"],
+        "hazards": ["cast finish", "stack overlap", "heal check", "kick miss"],
+        "quips": ["Council? Counsel the wipe", "Interrupt? More like inter-death", "Stack? More like whack", "Kick the habit… of dying"]
       },
       {
         "name": "Dathea",
-        "baseTemplate": "Handle [action] winds and stay off [target] storms. Meme: [quip]",
-        "roles": ["Wind Rider", "Storm Dodger", "Empower Caller", "Final Meme"],
-        "actions": ["wind rides", "storm avoids", "empower calls", "clutch interrupts"],
-        "targets": ["gust paths", "storm zones", "empowered adds", "your mage"],
-        "hazards": ["tornado pulls", "lightning chains", "wind phases", "post-nerf salt"],
-        "quips": ["Dathea? Data-hea(dache)", "Wind in your sails? Nah, wipes", "Storm chaser? Storm waster", "Empower hour—overtime edition"]
+        "baseTemplate": "[role] spreads [action] on [target] while avoiding [hazard]. Meme: [quip]",
+        "roles": ["Spreader", "Soaker", "DPS", "Meme Wind"],
+        "actions": ["spread markers", "soak pools", "dps bursts", "panic gusts"],
+        "targets": ["spread markers", "wind pools", "the boss", "your own marker"],
+        "hazards": ["marker overlap", "wind push", "dps check", "gust lag"],
+        "quips": ["Dathea? Death-ea", "Spread the love… and the wipe", "Wind? More like whined", "Gust bust = raid dust"]
+      },
+      {
+        "name": "Raszageth",
+        "baseTemplate": "Final [action] on [target] while surviving [hazard] storms. Meme: [quip]",
+        "roles": ["Storm Breaker", "Add Clear", "Healer", "Meme Dragon"],
+        "actions": ["storm breaks", "add bursts", "heal storms", "panic wings"],
+        "targets": ["storm cores", "adds", "the raid", "the pull timer"],
+        "hazards": ["storm surge", "add explosion", "heal check", "wing lag"],
+        "quips": ["Raszageth? Raz-a-death", "Storm? More like swarm", "Core? More like bore", "Dragon down… morale up"]
+      }
+    ]
+  },
+  {
+    "game": "Arc Raiders",
+    "raid": "Speranza Outpost Assault",
+    "phases": [
+      {
+        "name": "ARC Scout Swarm",
+        "baseTemplate": "[role] flanks the [target] with [action] while dodging [hazard]. Meme: [quip]",
+        "roles": ["Flanker", "EMP Spammer", "Loot Jockey", "Drone Bait"],
+        "actions": ["drone hacks", "weak spot bursts", "cover slides", "panic extracts"],
+        "targets": ["scout chassis", "relay nodes", "loot caches", "your downed buddy"],
+        "hazards": ["laser sweeps", "reinforcement drops", "EMP feedback", "friendly grenades"],
+        "quips": ["'Extract? Nah, one more crate'", "Swarm? More like 'swarmageddon'", "Scouts honor: We're screwed", "Drone life—short and explosive"]
+      },
+      {
+        "name": "Enforcer Patrol",
+        "baseTemplate": "Push through [action] patrols to secure [target]. Meme: [quip]",
+        "roles": ["Breacher", "Shield Tank", "Snipe Caller", "Meme Distraction"],
+        "actions": ["mech grapples", "stun grenades", "patrol calls", "bait emotes"],
+        "targets": ["enforcer joints", "supply drops", "wrong patrols", "bugged spawns"],
+        "hazards": ["melee slams", "shield bashes", "cooldown fails", "LFG randos"],
+        "quips": ["Enforcer? Enforce the wipe", "Patrol this: My sanity", "Joint effort? Nah, joint pain", "One enforcer down—fifty to go"]
+      },
+      {
+        "name": "Relay Node Hack",
+        "baseTemplate": "[role] hacks the [target] under [action] fire. Meme: [quip]",
+        "roles": ["Hacker", "Cover Fire", "Decoy Runner", "Buff Bot"],
+        "actions": ["node uploads", "suppressive bursts", "decoy flares", "overcharge boosts"],
+        "targets": ["core relays", "guard drones", "hacked turrets", "your own gear"],
+        "hazards": ["virus spreads", "drone intercepts", "upload lags", "tilt timers"],
+        "quips": ["Hack the planet? Hack the pain", "Node.js? More like no-de.js", "Upload speed: Slower than dial-up death", "Relay race to the extract"]
+      },
+      {
+        "name": "High-Threat Ambush",
+        "baseTemplate": "Survive the [action] ambush on [target] beacons. Meme: [quip]",
+        "roles": ["Ambush Breaker", "Revive Chain", "Heavy DPS", "Chaos Anchor"],
+        "actions": ["beacon flares", "ambush clears", "revive dashes", "heavy ordnance"],
+        "targets": ["threat beacons", "ambush nests", "downed squad", "rare loot"],
+        "hazards": ["flank surprises", "ordnance barrages", "revive fails", "extract denials"],
+        "quips": ["Ambush? Amateur bush", "High threat? Higher blood pressure", "Beacon of hope? Beacon of nope", "One revive left—hold my controller"]
+      },
+      {
+        "name": "Titan Boss Extract",
+        "baseTemplate": "Final [action] on the Titan while extracting [target]. Meme: [quip]",
+        "roles": ["Core Shooter", "Extract Hero", "DPS Finisher", "Victory Meme"],
+        "actions": ["titan cores", "extract ropes", "super clutches", "cheese vents"],
+        "targets": ["titan weakpoints", "extract choppers", "thrall adds", "epic loot"],
+        "hazards": ["one-shots", "phase stomps", "bad footing", "post-raid salt"],
+        "quips": ["Titan? Tiny tantrum", "Extract the win? Extract the pain", "Core dumped—us too", "GG—now farm the emblem"]
+      }
+    ]
+  },
+  {
+    "game": "Helldivers 2",
+    "raid": "Terminid Eradication Op",
+    "phases": [
+      {
+        "name": "Bug Nest Clear",
+        "baseTemplate": "[role] dives [action] into [target] while surviving [hazard]. Meme: [quip]",
+        "roles": ["Nest Bomber", "Stratagem Caller", "Swarm DPS", "Meme Reinforce"],
+        "actions": ["nest grenades", "stratagem drops", "bug bursts", "panic extractions"],
+        "targets": ["bug nests", "bile spewers", "horde waves", "your own pod"],
+        "hazards": ["bile explosions", "stratagem misfires", "swarm overload", "friendly fire"],
+        "quips": ["Nest? More like pest", "Eradicate? Eradicate my sanity", "Bugs? Hugz gone wrong", "One more nest—then we dip"]
+      },
+      {
+        "name": "Super Sample Grab",
+        "baseTemplate": "[role] secures [action] samples from [target] amid [hazard]. Meme: [quip]",
+        "roles": ["Sample Runner", "Cover Fire", "Charger Tank", "Meme Distraction"],
+        "actions": ["sample scoops", "suppressive fire", "charger bashes", "bait screams"],
+        "targets": ["super samples", "charger herds", "extraction points", "bug traps"],
+        "hazards": ["charger charges", "sample contamination", "fire misaim", "pod lag"],
+        "quips": ["Samples? Sample my rage", "Super? Super wipe", "Charger? Charger account", "Grab and gab—then die"]
+      },
+      {
+        "name": "Fortress Defend",
+        "baseTemplate": "[role] fortifies [action] against [target] assault. Meme: [quip]",
+        "roles": ["Turret Gunner", "Emplacement Setter", "Horde Clearer", "Meme Flag"],
+        "actions": ["turret locks", "emplacement builds", "horde sweeps", "flag plants"],
+        "targets": ["fortress walls", "bot dropships", "elite hunters", "democracy flags"],
+        "hazards": ["wall breaches", "emplacement jams", "hunter snipes", "flag desecration"],
+        "quips": ["Fortress? Fort-less", "Defend? Offend my eyes", "Horde? Whore-d of pain", "Flag this: My corpse"]
+      },
+      {
+        "name": "Boss Hunt Swarm",
+        "baseTemplate": "[role] stratagems [action] on [target] boss during [hazard]. Meme: [quip]",
+        "roles": ["Boss Breaker", "Orbital Caller", "Add Controller", "Chaos Anchor"],
+        "actions": ["orbital lasers", "boss weakpoints", "add clears", "railgun shots"],
+        "targets": ["boss weakspots", "elite swarms", "stratagem zones", "rare samples"],
+        "hazards": ["boss roars", "swarm flanks", "orbital misses", "reinforce fails"],
+        "quips": ["Boss? Boss level BS", "Hunt? Hunt for therapy", "Swarm? Swarmageddon 2.0", "One strat left—hold my liberty"]
+      },
+      {
+        "name": "Final Extract Democracy",
+        "baseTemplate": "Extract [action] while purging [target] remnants. Meme: [quip]",
+        "roles": ["Extract Hero", "Purge Finisher", "DPS Closer", "Victory Meme"],
+        "actions": ["extract beacons", "purge bombs", "final bursts", "democracy cheers"],
+        "targets": ["extract zones", "remnant hives", "elite guards", "epic medals"],
+        "hazards": ["zone denials", "hive revives", "guard one-shots", "post-op salt"],
+        "quips": ["Extract? Ex-tract my soul", "Democracy? Demo-crazy", "Purge? Purge the urge", "GG—now farm the cape"]
+      }
+    ]
+  },
+  {
+    "game": "Final Fantasy XIV",
+    "raid": "The Arcadion",
+    "phases": [
+      {
+        "name": "M1M2 Opener",
+        "baseTemplate": "[role] dodges [action] in [target] arena while stacking [hazard]. Meme: [quip]",
+        "roles": ["Dodge Tank", "Stack Healer", "DPS Burst", "Meme Poser"],
+        "actions": ["dodge flips", "stack heals", "burst combos", "pose emotes"],
+        "targets": ["opener blasts", "stack markers", "add phases", "your own glamour"],
+        "hazards": ["blast spreads", "stack overlaps", "phase shifts", "lag flips"],
+        "quips": ["Arcadion? Arca-die-on", "M1M2? Miss 1, Miss 2", "Stack? Whack stack", "Glamour? Glamor-wipe"]
+      },
+      {
+        "name": "Futures Rewritten",
+        "baseTemplate": "[role] rewrites [action] fate on [target] during [hazard]. Meme: [quip]",
+        "roles": ["Fate Weaver", "Echo Caller", "Savage DPS", "Meme Ultimate"],
+        "actions": ["fate threads", "echo bursts", "savage rotations", "prog calls"],
+        "targets": ["fate nodes", "echo orbs", "savage adds", "ultimate gates"],
+        "hazards": ["thread tangles", "echo decays", "prog checks", "gate locks"],
+        "quips": ["Rewritten? Re-wipe-ten", "Futures? Few-tures bright", "Savage? Sav-age rage", "Ultimate? Ultim-wipe"]
+      },
+      {
+        "name": "Chaotic Alliance",
+        "baseTemplate": "[role] allies [action] chaos on [target] bosses. Meme: [quip]",
+        "roles": ["Alliance Lead", "Chaos Breaker", "Healer Chain", "Meme Sync"],
+        "actions": ["alliance queues", "chaos interrupts", "heal chains", "sync kicks"],
+        "targets": ["alliance bosses", "chaos casters", "raid stacks", "your party finder"],
+        "hazards": ["queue fails", "interrupt misses", "stack bombs", "desync kicks"],
+        "quips": ["Chaotic? Cha-otic my brain", "Alliance? All-liar-nce", "Sync? Sink or swim", "Queue the pain"]
+      },
+      {
+        "name": "Vana'diel Crossover",
+        "baseTemplate": "[role] crosses [action] realms to [target] foes. Meme: [quip]",
+        "roles": ["Crossover Tank", "Realm Jumper", "XI DPS", "Meme Chocobo"],
+        "actions": ["realm portals", "crossover bursts", "XI combos", "chocobo mounts"],
+        "targets": ["crossover bosses", "realm adds", "FFXI echoes", "chocobo paths"],
+        "hazards": ["portal closes", "add floods", "echo lags", "mount kicks"],
+        "quips": ["Vana'diel? Vana-dye-el", "Crossover? Cross-over it", "XI? Ex-why die", "Chocobo? Choco-blow"]
+      },
+      {
+        "name": "Ultimate Glory",
+        "baseTemplate": "Claim [action] glory while enraging [target]. Meme: [quip]",
+        "roles": ["Glory Finisher", "Enrage Breaker", "Prog Healer", "Legend Meme"],
+        "actions": ["glory enrages", "breaker phases", "prog heals", "legend clears"],
+        "targets": ["ultimate cores", "enrage adds", "prog mechanics", "title emotes"],
+        "hazards": ["enrage wipes", "phase fails", "prog deaths", "title teases"],
+        "quips": ["Ultimate? Ultim-ate pain", "Glory? Gory story", "Prog? Pro-gone", "Legend? Leg-end my suffering"]
+      }
+    ]
+  },
+  {
+    "game": "Path of Exile 2",
+    "raid": "The Third Edict Boss Rush",
+    "phases": [
+      {
+        "name": "Act 4 Island Ambush",
+        "baseTemplate": "[role] ambushes [action] on [target] islands amid [hazard]. Meme: [quip]",
+        "roles": ["Island Breaker", "Gem Caller", "Minion Tank", "Meme Exile"],
+        "actions": ["island hacks", "gem bursts", "minion swarms", "exile dashes"],
+        "targets": ["island bosses", "gem nodes", "monster packs", "your own build"],
+        "hazards": ["ambush teleports", "gem explosions", "pack overloads", "build breaks"],
+        "quips": ["Edict? Edict my grave", "Third? Third time's the charm-wipe", "Island? Is-land dead", "Gem? Gem of doom"]
+      },
+      {
+        "name": "Uber Encounter",
+        "baseTemplate": "[role] delves [action] ubers for [target] loot. Meme: [quip]",
+        "roles": ["Delve Runner", "Uber DPS", "Curse Breaker", "Meme Mirror"],
+        "actions": ["delve paths", "uber combos", "curse lifts", "mirror farms"],
+        "targets": ["uber bosses", "delve nodes", "curse adds", "mirror tiers"],
+        "hazards": ["path collapses", "combo fails", "curse stacks", "tier drops"],
+        "quips": ["Uber? Uber-expensive death", "Delve? Delve into debt", "Mirror? Mirror needs", "Farm? Harm farm"]
+      },
+      {
+        "name": "Abyss Update",
+        "baseTemplate": "[role] abysses [action] depths against [target]. Meme: [quip]",
+        "roles": ["Abyss Diver", "Depth Caller", "Pack Clearer", "Meme Tablet"],
+        "actions": ["abyss drops", "depth bursts", "pack sweeps", "tablet rules"],
+        "targets": ["abyss bosses", "depth monsters", "pack swarms", "tablet mods"],
+        "hazards": ["drop voids", "depth spikes", "swarm rushes", "mod curses"],
+        "quips": ["Abyss? A-byss-ness", "Update? Up-date this", "Depth? Depth of despair", "Tablet? Tab-let me die"]
+      },
+      {
+        "name": "Pinnacle Beast",
+        "baseTemplate": "[role] pinnacles [action] the beast in [target] rush. Meme: [quip]",
+        "roles": ["Pinnacle Finisher", "Beast Breaker", "Rush DPS", "Chaos Anchor"],
+        "actions": ["pinnacle cores", "beast phases", "rush clears", "build swaps"],
+        "targets": ["beast weakpoints", "pinnacle adds", "rush waves", "rare uniques"],
+        "hazards": ["core dumps", "phase enrages", "wave floods", "swap fails"],
+        "quips": ["Pinnacle? Pin-nacle high", "Beast? Beast mode: Off", "Rush? Rush to judgment", "Unique? You-knee-que pain"]
+      },
+      {
+        "name": "Endgame Mirror",
+        "baseTemplate": "Mirror [action] endgame while corrupting [target]. Meme: [quip]",
+        "roles": ["Mirror Hero", "Corrupt Closer", "Endgame DPS", "Victory Meme"],
+        "actions": ["mirror vaults", "corrupt bombs", "endgame bursts", "farm loops"],
+        "targets": ["mirror bosses", "corrupt nodes", "endgame maps", "divine orbs"],
+        "hazards": ["vault bricks", "corrupt bricks", "map mods", "orb wastes"],
+        "quips": ["Mirror? Mirr-or else", "Endgame? End-game over", "Corrupt? Cor-rupt my day", "GG—now league start"]
+      }
+    ]
+  },
+  {
+    "game": "Monster Hunter Wilds",
+    "raid": "Arkveld Elder Hunt",
+    "phases": [
+      {
+        "name": "Sandship Approach",
+        "baseTemplate": "[role] approaches [action] on [target] sands via [hazard]. Meme: [quip]",
+        "roles": ["Sand Rider", "Seikret Caller", "Wyvern Tank", "Meme Felyne"],
+        "actions": ["sandship grapples", "seikret mounts", "wyvern bursts", "felyne distractions"],
+        "targets": ["sandship decks", "arkveld wings", "storm adds", "your own cart"],
+        "hazards": ["sandstorms", "mount kicks", "wyvern roars", "felyne fails"],
+        "quips": ["Arkveld? Ark-veld of tears", "Sandship? Sand-shipwreck", "Approach? A-proach carefully", "Mount? Mount my rage"]
+      },
+      {
+        "name": "Weak Point Break",
+        "baseTemplate": "[role] breaks [action] weakpoints on [target] during [hazard]. Meme: [quip]",
+        "roles": ["Point Breaker", "Focus Shooter", "Chain DPS", "Meme Wirebug"],
+        "actions": ["point slams", "focus modes", "chain combos", "wirebug dodges"],
+        "targets": ["weak wounds", "arkveld limbs", "chain adds", "focus zones"],
+        "hazards": ["wound heals", "limb sweeps", "add rushes", "dodge misses"],
+        "quips": ["Weak? Week point", "Break? Break my spirit", "Focus? Fo-cus this", "Wirebug? Wire-bug out"]
+      },
+      {
+        "name": "Gogmazios Raid",
+        "baseTemplate": "[role] raids [action] gogmazios in [target] lava. Meme: [quip]",
+        "roles": ["Lava Tank", "Raid Caller", "Magma Clearer", "Meme Coolant"],
+        "actions": ["lava soaks", "raid flares", "magma bursts", "coolant throws"],
+        "targets": ["gogmazios cores", "lava pools", "magma adds", "raid ships"],
+        "hazards": ["lava flows", "flare misfires", "add explosions", "coolant fails"],
+        "quips": ["Gogmazios? Gog-maze-ios", "Raid? Raid my health", "Lava? Lava good", "Magma? Mag-ma drama"]
+      },
+      {
+        "name": "Mizutsune Bubble",
+        "baseTemplate": "[role] bubbles [action] mizutsune across [target]. Meme: [quip]",
+        "roles": ["Bubble Breaker", "Soap DPS", "Slide Tank", "Meme Cleanser"],
+        "actions": ["bubble pops", "soap slides", "tank dodges", "cleanser bombs"],
+        "targets": ["mizutsune scales", "bubble traps", "soap zones", "rare parts"],
+        "hazards": ["bubble slips", "scale slams", "zone floods", "bomb duds"],
+        "quips": ["Mizutsune? Mizu-tsun-ami", "Bubble? Bubble trouble", "Soap? Soap opera wipe", "Cleanser? Cleanse my sins"]
+      },
+      {
+        "name": "Elder Enrage Extract",
+        "baseTemplate": "Extract [action] elder while enraging [target]. Meme: [quip]",
+        "roles": ["Extract Hero", "Enrage Finisher", "Elder DPS", "Trophy Meme"],
+        "actions": ["extract ropes", "enrage breaks", "elder bursts", "trophy carves"],
+        "targets": ["elder tails", "enrage phases", "trophy drops", "epic plates"],
+        "hazards": ["tail whips", "phase stomps", "drop misses", "carve fails"],
+        "quips": ["Elder? Eld-er help", "Enrage? En-rage quit", "Extract? Ex-tract me", "GG—now grind the set"]
       }
     ]
   }
