@@ -14,8 +14,9 @@ import jsPDF from 'jspdf';
 import seedrandom from 'seedrandom';
 import raidsData from './data/raids.json';
 import memesData from './data/memes.json';
-import { auth } from './firebase'; // Firebase auth import
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'; // Auth functions
+import { auth, db } from './firebase'; // Add db import
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'; // Firestore funcs
 
 // Register Chart.js components
 ChartJS.register(
@@ -37,17 +38,21 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   // Auth states
-  const [user, setUser] = useState(null); // Current user
-  const [authLoading, setAuthLoading] = useState(true); // Spinner while checking auth
-  const [showAuthModal, setShowAuthModal] = useState(false); // Signup/Login modal
-  const [isSignup, setIsSignup] = useState(false); // Toggle signup vs login
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // New: Saves states
+  const [savedRaids, setSavedRaids] = useState([]); // Array of saved plans
+  const [saving, setSaving] = useState(false); // Save spinner
+
   // Free limits: 3 gens/day
   const today = new Date().toDateString();
-  const testInterval = Math.floor(Date.now() / 30000); // 30s slots for testing
+  const testInterval = Math.floor(Date.now() / 30000);
   const gensToday = JSON.parse(localStorage.getItem(`gens_test_${testInterval}`) || '0');
   const gensCount = parseInt(gensToday) || 0;
 
@@ -59,6 +64,22 @@ function App() {
     });
     return unsubscribe;
   }, []);
+
+  // New: Listen for saved raids (real-time)
+  useEffect(() => {
+    if (!user) {
+      setSavedRaids([]);
+      return;
+    }
+    const unsub = onSnapshot(
+      collection(db, `users/${user.uid}/raids`),
+      (snapshot) => {
+        const raids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSavedRaids(raids.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis())); // Newest first
+      }
+    );
+    return unsub;
+  }, [user]);
 
   // Parse URL params for share
   useEffect(() => {
@@ -76,7 +97,7 @@ function App() {
   // Filter raids by game
   const availableRaids = game ? raidsData.filter(r => r.game === game).map(r => r.raid) : [];
 
-  // Signup/Login handlers
+  // Auth handlers
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthError('');
@@ -90,12 +111,51 @@ function App() {
       setEmail('');
       setPassword('');
     } catch (error) {
-      setAuthError(error.message); // e.g., "auth/user-not-found"
+      setAuthError(error.message);
     }
   };
 
   const handleLogout = async () => {
     await signOut(auth);
+  };
+
+  // New: Save raid to Firestore
+  const saveRaid = async () => {
+    if (!user || !plan) return;
+    setSaving(true);
+    try {
+      await addDoc(collection(db, `users/${user.uid}/raids`), {
+        ...plan,
+        game,
+        raid,
+        vibe,
+        createdAt: serverTimestamp()
+      });
+      alert('Raid saved! Check My Saved Raids below.');
+    } catch (error) {
+      alert('Save failed: ' + error.message);
+    }
+    setSaving(false);
+  };
+
+  // New: Load saved raid
+  const loadSavedRaid = (saved) => {
+    setGame(saved.game);
+    setRaid(saved.raid);
+    setSquadSize(saved.squadSize);
+    setVibe(saved.vibe);
+    setPlan(saved);
+  };
+
+  // New: Delete saved raid
+  const deleteSavedRaid = async (id) => {
+    if (!confirm('Delete this raid?')) return;
+    try {
+      await deleteDoc(doc(db, `users/${user.uid}/raids`, id));
+      // onSnapshot auto-updates list
+    } catch (error) {
+      alert('Delete failed: ' + error.message);
+    }
   };
 
   // Generate raid plan
@@ -106,7 +166,7 @@ function App() {
       return;
     }
     setLoading(true);
-    const seed = seedrandom(`${raid}-${Date.now()}`); // Seeded for reproducibility
+    const seed = seedrandom(`${raid}-${Date.now()}`);
     const selectedRaidData = raidsData.find(r => r.raid === raid);
     const phases = selectedRaidData.phases.map(phase => {
       const role = phase.roles[Math.floor(seed() * phase.roles.length)];
@@ -115,14 +175,12 @@ function App() {
       const hazard = phase.hazards[Math.floor(seed() * phase.hazards.length)];
       const quip = phase.quips[Math.floor(seed() * phase.quips.length)];
 
-      // Always random for max variety (thematic match if possible)
       let meme;
-      const matchedMeme = memesData.find(m => m.quip.includes(quip.substring(0, 10))); // Loose match on first 10 chars
+      const matchedMeme = memesData.find(m => m.quip.includes(quip.substring(0, 10)));
       if (matchedMeme) {
         meme = matchedMeme;
       } else {
-        // Full random from all, seeded per phase
-        const phaseSeed = seedrandom(`${seed()}-${Date.now()}-${phase.name}`); // Unique per phase/gen
+        const phaseSeed = seedrandom(`${seed()}-${Date.now()}-${phase.name}`);
         const randomIndex = Math.floor(phaseSeed() * memesData.length);
         meme = memesData[randomIndex];
       }
@@ -137,21 +195,19 @@ function App() {
       return {
         name: phase.name,
         text: generatedText,
-        time: Math.floor(seed() * 10 + 5), // Fake 5-15 min per phase
+        time: Math.floor(seed() * 10 + 5),
         meme: meme.gif
       };
     });
 
-    // Squad twist
     const title = squadSize < 4 ? `Short Stack ${vibe} Mode – No Rezzes!` : `${vibe} Fireteam Plan`;
     setPlan({ title, phases, squadSize });
 
-    // Update limit
     localStorage.setItem(`gens_${today}`, (gensCount + 1).toString());
     setLoading(false);
   };
 
-  // Export to PDF
+  // Export to PDF (unchanged)
   const exportPDF = () => {
     if (!plan) return;
     const doc = new jsPDF();
@@ -161,46 +217,39 @@ function App() {
     const lineHeight = 6;
     let yPos = 20;
 
-    // Background: Dark gamer fill
-    doc.setFillColor(26, 26, 46); // #1a1a2e
+    doc.setFillColor(26, 26, 46);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-    // Title: Neon bold header
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(0, 255, 136); // Neon green
+    doc.setTextColor(0, 255, 136);
     doc.text(plan.title, margin, yPos);
     yPos += 15;
 
-    // Phases: Wrapped text with borders & icons
     plan.phases.forEach((phase, idx) => {
-      // Check if we need a new page
       if (yPos > 250) {
         doc.addPage();
         yPos = 20;
-        // Re-apply bg to new page
         doc.setFillColor(26, 26, 46);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
       }
 
-      // Phase header: Bold, underlined with icon
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.setDrawColor(0, 255, 136); // Green line
+      doc.setDrawColor(0, 255, 136);
       doc.setLineWidth(0.5);
-      doc.line(margin, yPos, pageWidth - margin, yPos); // Top border
+      doc.line(margin, yPos, pageWidth - margin, yPos);
       yPos += lineHeight;
-      doc.text(`* ${phase.name}`, margin, yPos); // Simple icon fallback
+      doc.text(`* ${phase.name}`, margin, yPos);
       yPos += lineHeight;
-      doc.line(margin, yPos, pageWidth - margin, yPos); // Bottom border for header
+      doc.line(margin, yPos, pageWidth - margin, yPos);
 
-      // Phase text: Wrapped, smaller font
       doc.setFontSize(10);
       doc.setFont(undefined, 'normal');
       const phaseText = `${phase.text} (Est. Time: ${phase.time} mins)`;
       const splitText = doc.splitTextToSize(phaseText, pageWidth - (margin * 2));
       splitText.forEach(line => {
-        if (yPos > 280) { // Page break mid-phase
+        if (yPos > 280) {
           doc.addPage();
           yPos = 20;
           doc.setFillColor(26, 26, 46);
@@ -210,10 +259,9 @@ function App() {
         yPos += lineHeight;
       });
 
-      yPos += 5; // Space between phases
+      yPos += 5;
     });
 
-    // Footer: Watermark tease
     doc.setFontSize(8);
     doc.setTextColor(128, 128, 128);
     doc.text('Generated by Meme Raid Gen - Pro for Squad Saves!', margin, doc.internal.pageSize.getHeight() - 10);
@@ -227,7 +275,7 @@ function App() {
     datasets: [{
       label: 'Est. Time (mins)',
       data: plan.phases.map(p => p.time),
-      borderColor: '#00ff88', // Neon green
+      borderColor: '#00ff88',
       backgroundColor: 'rgba(0, 255, 136, 0.2)',
     }],
   } : null;
@@ -249,7 +297,7 @@ function App() {
   // Open auth modal
   const openAuth = () => {
     setShowAuthModal(true);
-    setIsSignup(!user); // Signup if new, login if existing
+    setIsSignup(!user);
     setAuthError('');
   };
 
@@ -380,7 +428,7 @@ function App() {
 
       {/* Output */}
       {plan && (
-        <div className="max-w-2xl mx-auto bg-gray-800 p-6 rounded-lg">
+        <div className="max-w-2xl mx-auto bg-gray-800 p-6 rounded-lg mb-8">
           <h2 className="text-2xl font-bold mb-4 text-wipe-red">{plan.title}</h2>
           <div className="mb-6">
             <h3 className="text-xl mb-2">Timeline</h3>
@@ -399,37 +447,65 @@ function App() {
               </div>
             ))}
           </div>
-          <button
-            onClick={exportPDF}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded transition"
-          >
-            Export PDF
-          </button>
-          <button
-            onClick={shareLink}
-            className="mt-2 bg-green-600 hover:bg-green-700 py-2 px-4 rounded transition"
-          >
-            Copy Share Link
-          </button>
-          {/* Pro Tease: Gated by auth */}
-          <div className="mt-4 p-4 bg-gray-700 rounded text-center">
-            {user ? (
+          <div className="flex flex-wrap gap-2 mt-4">
+            <button
+              onClick={exportPDF}
+              className="bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded transition"
+            >
+              Export PDF
+            </button>
+            <button
+              onClick={shareLink}
+              className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded transition"
+            >
+              Copy Share Link
+            </button>
+            {user && (
               <button
-                onClick={() => alert('Pro unlocked! Saves & chats coming next. Stripe paywall soon.')}
-                className="bg-raid-neon text-black py-2 px-4 rounded font-bold hover:bg-green-400 transition"
+                onClick={saveRaid}
+                disabled={saving}
+                className="bg-purple-600 hover:bg-purple-700 py-2 px-4 rounded transition disabled:opacity-50"
               >
-                Pro Active: Save This Raid?
-              </button>
-            ) : (
-              <button
-                onClick={openAuth}
-                className="bg-raid-neon text-black py-2 px-4 rounded font-bold hover:bg-green-400 transition"
-              >
-                Unlock Squad Chaos?
+                {saving ? 'Saving...' : 'Save This Raid'}
               </button>
             )}
-            <p className="text-xs text-gray-400 mt-2">Pro: Save raids, form groups, chat memes.</p>
           </div>
+        </div>
+      )}
+
+      {/* New: My Saved Raids Section */}
+      {user && (
+        <div className="max-w-2xl mx-auto bg-gray-800 p-6 rounded-lg">
+          <h3 className="text-xl font-bold mb-4 text-raid-neon">My Saved Raids ({savedRaids.length})</h3>
+          {savedRaids.length === 0 ? (
+            <p className="text-gray-400">No saved raids yet. Generate one and hit Save!</p>
+          ) : (
+            <div className="space-y-4">
+              {savedRaids.map((saved) => (
+                <div key={saved.id} className="phase-card p-4 bg-gray-700 rounded flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-wipe-red">{saved.title}</h4>
+                    <p className="text-sm text-gray-300">{saved.game} - {saved.raid} - Squad: {saved.squadSize}</p>
+                    <p className="text-xs text-gray-500">Saved: {saved.createdAt?.toDate().toLocaleDateString()}</p>
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => loadSavedRaid(saved)}
+                      className="bg-blue-600 hover:bg-blue-700 py-1 px-3 rounded text-sm"
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => deleteSavedRaid(saved.id)}
+                      className="bg-red-600 hover:bg-red-700 py-1 px-3 rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
