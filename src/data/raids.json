@@ -1,0 +1,104 @@
+[
+  {
+    "game": "Destiny 2",
+    "raid": "Last Wish",
+    "phases": [
+      {
+        "name": "Vault Encounter",
+        "baseTemplate": "Player [role] must [action] the [target] while avoiding [hazard]. Meme: [quip]",
+        "roles": ["DPS", "Healer", "Meme Lord", "Tank"],
+        "actions": ["aggro adds", "spam grenades", "cheese from ledge", "swap symbols"],
+        "targets": ["symbol plates", "Riven's eyes", "Taken blobs", "that one guy who DC'd"],
+        "hazards": ["laser beams", "darkness phase", "bad comms", "LFG toxicity"],
+        "quips": ["'This is fine' – your fireteam", "Wipe? Nah, practice run", "GO GO GO but actually wait", "Blame Taniks, the Schemeless"]
+      },
+      {
+        "name": "Maze",
+        "baseTemplate": "Navigate the [path] by [action] and calling out [target]. Meme: [quip]",
+        "roles": ["Caller", "Runner", "Meme Distraction", "Safeguard"],
+        "actions": ["wall jumps", "darkness dodges", "team sync calls", "panic emotes"],
+        "targets": ["correct door", "wrong traps", "ghost memes", "Riven clones"],
+        "hazards": ["time pressure", "confusing layouts", "mic feedback", "screams"],
+        "quips": ["'Left or right? Yes.'", "Maze? More like amaze-balls fail", "If lost, blame the map", "Portal gun when?"]
+      },
+      {
+        "name": "Kalli",
+        "baseTemplate": "[role] focuses on [action] adds while dodging [hazard]. Meme: [quip]",
+        "roles": ["Add Clear", "DPS Queen", "Juke Master", "Buff Bot"],
+        "actions": ["AOE bursts", "priority targets", "dance mechanics", "super spam"],
+        "targets": ["ogres", "witches", "taken knights", "your own feet"],
+        "hazards": ["poison clouds", "melee swings", "phase transitions", "overconfident LFG"],
+        "quips": ["Kalli who? We call her 'Wipe-lli'", "Hex? More like 'ex' your chances", "Dodge or die trying—anime style", "Buffs? We need prayers"]
+      },
+      {
+        "name": "Shuro Chi",
+        "baseTemplate": "Burn the adds with [action] and stay on [target] platforms. Meme: [quip]",
+        "roles": ["Platformer", "Burner", "Echo Caller", "Meme Anchor"],
+        "actions": ["rocket volleys", "echo kills", "platform hops", "group heals"],
+        "targets": ["eye beacons", "ogre rush", "wrong echoes", "falling friends"],
+        "hazards": ["void pulls", "add swarms", "platform swaps", "tilt-induced rage"],
+        "quips": ["Shuro Chi? Sounds like 'sure, we'll wipe'", "Echo location: Your tears", "Platforming pro? In theory", "One more phase—famous last words"]
+      },
+      {
+        "name": "Riven",
+        "baseTemplate": "Final [action] on Riven while handling [target] gaze. Meme: [quip]",
+        "roles": ["Gaze Breaker", "DPS Finisher", "Revive Hero", "Victory Meme"],
+        "actions": ["heart shots", "gaze breaks", "super clutch", "cheese strat"],
+        "targets": ["Riven's heart", "gaze beams", "thrall adds", "loot chest"],
+        "hazards": ["one-shots", "darkness aura", "bad positioning", "post-raid salt"],
+        "quips": ["Riven? Riven us wrong", "Gaze into the abyss... and wipe", "Heartbreaker? Nah, raidbreaker", "GG—now for the emblem flex"]
+      }
+    ]
+  },
+  {
+    "game": "World of Warcraft",
+    "raid": "Vault of the Incarnates (Mythic)",
+    "phases": [
+      {
+        "name": "Eranog",
+        "baseTemplate": "Tank [action] the orbs away from [target] while [role] interrupts. Meme: [quip]",
+        "roles": ["Tank", "Interrupt Queen", "Orb Juggler", "Meme Healer"],
+        "actions": ["soak orbs", "interrupt casts", "spread mechanics", "panic cleanse"],
+        "targets": ["raid stack", "boss adds", "fiery orbs", "your shadow priest"],
+        "hazards": ["molten spikes", "kickback damage", "interrupt fail", "LFR habits"],
+        "quips": ["Eranog? More like 'error not'", "Orb daddy issues", "Interrupt or perish—classic WoW", "Tank swap? Like musical chairs"]
+      },
+      {
+        "name": "Terros",
+        "baseTemplate": "[role] stacks for [action] while avoiding [hazard] cracks. Meme: [quip]",
+        "roles": ["Stack Captain", "Crack Dodger", "Res Healer", "Mythic Meme"],
+        "actions": ["stack heals", "dodge cracks", "shard soaks", "rez chain"],
+        "targets": ["safe zones", "crystal shards", "boss wake", "dead DPS"],
+        "hazards": ["earth spikes", "wake waves", "stack bombs", "tilt timers"],
+        "quips": ["Terros? Terror-ific wipes", "Stack and pray", "Crack addict? No, mechanic", "One rez left—hold my beer"]
+      },
+      {
+        "name": "The Primal Council",
+        "baseTemplate": "Rotate [action] on elements and call [target] swaps. Meme: [quip]",
+        "roles": ["Element Caller", "Swap Master", "Debuff Sponge", "Council Clown"],
+        "actions": ["element soaks", "debuff swaps", "mark calls", "meme rotations"],
+        "targets": ["fire/ice zones", "wrong elements", "council adds", "your rogue"],
+        "hazards": ["element clash", "debuff overload", "swap confusion", "recount drama"],
+        "quips": ["Council? More like counsel to wipe", "Elemental my ass—fire it up", "Swap like it's hot", "Primal? Primitive fails"]
+      },
+      {
+        "name": "Sennarth",
+        "baseTemplate": "Web [role] breaks [target] while [action] adds. Meme: [quip]",
+        "roles": ["Web Breaker", "Add DPS", "Kite Queen", "Silk Meme"],
+        "actions": ["web slashes", "add bursts", "kite paths", "group escapes"],
+        "targets": ["web strands", "spider adds", "silk traps", "stranded tanks"],
+        "hazards": ["web immobilize", "add swarms", "phase transitions", "Arachnophobia.exe"],
+        "quips": ["Sennarth? Senna-rthritis from wipes", "Web of lies—and deaths", "Break free? Easier said", "Spider-Man? More like wipe-der-man"]
+      },
+      {
+        "name": "Dathea",
+        "baseTemplate": "Handle [action] winds and stay off [target] storms. Meme: [quip]",
+        "roles": ["Wind Rider", "Storm Dodger", "Empower Caller", "Final Meme"],
+        "actions": ["wind rides", "storm avoids", "empower calls", "clutch interrupts"],
+        "targets": ["gust paths", "storm zones", "empowered adds", "your mage"],
+        "hazards": ["tornado pulls", "lightning chains", "wind phases", "post-nerf salt"],
+        "quips": ["Dathea? Data-hea(dache)", "Wind in your sails? Nah, wipes", "Storm chaser? Storm waster", "Empower hour—overtime edition"]
+      }
+    ]
+  }
+]
