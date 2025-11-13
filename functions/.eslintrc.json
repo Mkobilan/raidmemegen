@@ -1,0 +1,20 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "sourceType": "script"
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "ignorePatterns": [
+    "**/node_modules/*"
+  ],
+  "rules": {
+    "no-console": "off",
+    "no-undef": "off"
+  }
+}

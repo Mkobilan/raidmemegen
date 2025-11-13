@@ -4,6 +4,7 @@ import { getAuth } from 'firebase/auth'; // For user auth
 import { getFirestore } from 'firebase/firestore'; // For saving raids (structured docs)
 import { getDatabase } from 'firebase/database'; // For group chats (real-time sync)
 import { getStorage } from 'firebase/storage'; // For file uploads (e.g., shared PDFs)
+import { getFunctions } from 'firebase/functions'; // For callable functions (Stripe, etc.)
 
 // Your exact config
 const firebaseConfig = {
@@ -25,6 +26,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const realtimeDb = getDatabase(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app, { region: 'us-central1' });  // <- Added region here
 
 // Optional: Analytics (uncomment if you want usage tracking)
 // import { getAnalytics } from 'firebase/analytics';
