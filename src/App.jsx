@@ -670,7 +670,7 @@ const response = await fetch(functionUrl, {
   return (
     <div className="min-h-screen bg-gray-900 p-4">
       <header className="mb-32 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-green-400">Meme Raid Gen</h1>
+        <h1 className="text-3xl font-bold text-green-400">Raid Gen</h1>
         {user ? (
           <span className="text-green-400">
             Welcome, {user.displayName || user.email}! {pro && '(Pro)'} 
@@ -684,6 +684,13 @@ const response = await fetch(functionUrl, {
           </button>
         )}
       </header>
+
+      {/* SEO Intro Paragraphs */}
+    <div className="max-w-4xl mx-auto mb-8 text-center bg-gray-800 p-6 rounded-lg border border-green-400">
+      <h2 className="text-2xl font-bold mb-4 text-green-400">Raid Generator: Custom Plans for Arc Raiders, Destiny 2, WoW & Helldivers 2</h2>
+      <p className="text-lg mb-4 text-white">Dive into the ultimate <strong>raid generator</strong> designed for gamers tackling tough content. Whether you're building a <strong>Destiny 2 raid generator</strong> strategy for Vault of Glass or a <strong>WoW raid strategy generator</strong> for mythic bosses, this tool creates squad-specific plans with phases, estimated times, and timeline charts. Add a twist with "Meme Chaos" vibe for funny raid plans that roast your wipes, or go "Serious Strat" for focused <strong>Helldivers 2 squad plans</strong>.</p>
+      <p className="text-lg text-white">Tailored for MMOs like Final Fantasy XIV savage raids, Path of Exile 2 encounters, and Monster Hunter Wilds hunts—select your game, raid, squad size (3-6 players), and generate <strong>meme raid strategies</strong> instantly. Free tier: 3 gens/day. Pro: Unlimited for $5/mo. Export as PDF, share links, or save to your account. Less wipes, more laughs—start generating!</p>
+    </div>
 
       {showAuthModal && (
         <AuthModal
