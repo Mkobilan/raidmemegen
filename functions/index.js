@@ -46,7 +46,7 @@ exports.createStripeCheckoutSession = onCall(
         customer_email: email,
         line_items: [
           {
-            price: 'price_1SSZmFFzYxaa9KVAd8yyWAMA',
+            price: 'price_1STxJKC86y95wOyLGxt8k0cv',
             quantity: 1,
           },
         ],
