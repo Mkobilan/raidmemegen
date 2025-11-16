@@ -565,6 +565,72 @@ function App() {
     }
   };
 
+ // Updated cancelPro (replace the httpsCallable version)
+async function cancelPro() {
+  if (!user || !pro) {
+    console.log('❌ No user or not Pro – bail');
+    return;
+  }
+
+  if (!confirm('Cancel Pro sub? You\'ll keep access until the end of your billing period. This can\'t be undone.')) {
+    return;
+  }
+
+  setLoading(true);
+  try {
+    console.log('🔥 CANCEL CLICK - Starting cancel (fetch mode)');
+    
+    // Get fresh ID token
+    const idToken = await user.getIdToken();
+    console.log('📞 Got ID token for cancel');
+
+    // Build URL (match your upgrade endpoint)
+    const functionUrl = `https://us-central1-raidmemegen.cloudfunctions.net/cancelSubscription`;
+    const origin = window.location.origin;  // For consistency, though cancel doesn't need it
+    console.log('📡 Calling URL:', functionUrl, 'with origin:', origin);
+
+    // In cancelPro, replace the fetch body line:
+const response = await fetch(functionUrl, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${idToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ data: {} }),  // <- Wrap in "data"; empty since no params needed
+});
+
+    console.log('📥 Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('💥 Fetch error:', response.status, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Cancel response:', data);
+
+    if (data.success) {
+      alert(data.message);  // e.g., "Canceled – until [date]"
+      // Refetch user state (triggers listener)
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const freshData = userDoc.data();
+        setPro(freshData.isPro ?? false);
+        setGensCount(freshData.gensToday || 0);
+      }
+    } else {
+      throw new Error(data.message || 'Unknown response');
+    }
+  } catch (error) {
+    console.error('💥 Full fetch error:', error);
+    alert('Cancel failed: ' + (error.message || 'Check console/logs.'));
+  } finally {
+    setLoading(false);
+  }
+}
+
   // Close upgrade modal
   const closeUpgradeModal = () => {
     setShowUpgradeModal(false);
@@ -759,39 +825,45 @@ function App() {
           </div>
         )}
 
-        <div className="text-center pt-8">
-          {user ? (
-            pro ? (
-              <button
-                onClick={() => alert('You\'re already Pro! Unlimited gens unlocked. Manage sub at stripe.com.')}
-                className="bg-green-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-green-400"
-              >
-                Pro Account Active – Unlimited Chaos! 🚀
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  console.log('🔥 GO PRO CLICK - Logged in branch');
-                  upgradeToPro();
-                }}
-                disabled={loading}
-                className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400 disabled:opacity-50"
-              >
-                {loading ? 'Upgrading...' : 'Go Pro for Unlimited Gens & Squad Fun ($5/mo)'}
-              </button>
-            )
-          ) : (
-            <button
-              onClick={() => {
-                console.log('🔥 LOGIN CLICK - Not logged in branch, opening modal');
-                setShowAuthModal(true);
-              }}
-              className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400"
-            >
-              Log In to Go Pro ($5/mo)
-            </button>
-          )}
-        </div>
+       <div className="text-center pt-8">
+  {user ? (
+    pro ? (
+      <div className="space-y-2">
+        <button
+          disabled={loading}
+          className="bg-green-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-green-400 disabled:opacity-50"
+        >
+          {loading ? 'Canceling...' : 'Pro Account Active – Unlimited Chaos! 🚀'}
+        </button>
+        <button
+          onClick={cancelPro}
+          disabled={loading}
+          className="bg-red-500 text-white px-6 py-3 rounded font-bold focus:outline-none hover:bg-red-400 disabled:opacity-50"
+        >
+          {loading ? 'Canceling...' : 'Cancel Pro Subscription'}
+        </button>
+        <p className="text-sm text-gray-400 mt-2">
+          Manage billing at <a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">stripe.com</a>
+        </p>
+      </div>
+    ) : (
+      <button
+        onClick={upgradeToPro}
+        disabled={loading}
+        className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400 disabled:opacity-50"
+      >
+        {loading ? 'Upgrading...' : 'Go Pro for Unlimited Gens & Squad Fun ($5/mo)'}
+      </button>
+    )
+  ) : (
+    <button
+      onClick={() => setShowAuthModal(true)}
+      className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400"
+    >
+      Log In to Go Pro ($5/mo)
+    </button>
+  )}
+</div>
       </div>
     </div>
   ); 

@@ -144,3 +144,99 @@ exports.stripeWebhook = onRequest(
     }
   }
 );
+
+// === UPDATED CANCEL FUNCTION (Granular Errors) ===
+exports.cancelSubscription = onCall(
+  {
+    secrets: ['STRIPE_SECRET_KEY'],
+  },
+  async (request) => {
+    console.log('Cancel invoked for uid:', request.auth?.uid);
+
+    if (!request.auth || !request.auth.uid) {
+      console.log('No auth - throwing unauthenticated');
+      throw new HttpsError('unauthenticated', 'Must be logged in.');
+    }
+
+    const uid = request.auth.uid;
+    console.log('Auth OK – uid:', uid);
+
+    try {
+      console.log('Fetching secret...');
+      const secretValue = await stripeSecret.value();
+      console.log('Secret fetched - length:', secretValue ? secretValue.length : 'NULL/UNDEFINED');
+
+      if (!secretValue || secretValue.length < 50) {
+        console.error('Secret invalid - value preview:', secretValue ? secretValue.substring(0, 10) + '...' : 'NULL');
+        throw new HttpsError('internal', 'Invalid Stripe secret – contact support.');
+      }
+
+      console.log('Initializing Stripe...');
+      const stripe = new Stripe(secretValue);
+
+      // Fetch user doc for sub ID
+      console.log('Fetching user doc...');
+      const userDoc = await admin.firestore().collection('users').doc(uid).get();
+      if (!userDoc.exists) {
+        console.log('User doc missing');
+        throw new HttpsError('not-found', 'User profile not found – try logging out/in.');
+      }
+
+      const userData = userDoc.data();
+      const subId = userData.stripeSubId;
+      console.log('User sub ID from Firestore:', subId || 'MISSING');
+      if (!subId) {
+        console.log('No sub ID – throwing precondition');
+        throw new HttpsError('failed-precondition', 'No active subscription found. Upgrade again if needed.');
+      }
+
+      console.log('Canceling sub:', subId);
+
+      // Check sub status first (optional: avoids cancel on already-canceled)
+      const sub = await stripe.subscriptions.retrieve(subId);
+      console.log('Sub status:', sub.status);
+      if (sub.status === 'canceled') {
+        throw new HttpsError('already-exists', 'Subscription already canceled.');
+      }
+
+      // Cancel at period end
+      const updatedSub = await stripe.subscriptions.update(subId, {
+        cancel_at_period_end: true,
+      });
+
+      console.log('Sub updated:', updatedSub.id, '– ends at:', new Date(updatedSub.current_period_end * 1000).toISOString());
+
+      // Update Firestore
+      console.log('Updating Firestore...');
+      const userRef = admin.firestore().collection('users').doc(uid);
+      await userRef.update({
+        isPro: false,
+        pro: false,  // Legacy
+        stripeSubId: '',  // Clear it
+        canceledAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log('✅ User downgraded in Firestore');
+      return { 
+        success: true, 
+        message: `Subscription canceled – Pro access until ${new Date(updatedSub.current_period_end * 1000).toLocaleDateString()}.`,
+        endsAt: updatedSub.current_period_end 
+      };
+    } catch (error) {
+      console.error('Full error in catch:', error);
+      console.error('Error stack:', error.stack);
+      
+      // Granular errors based on common fails
+      if (error.code === 'StripeInvalidRequestError' || error.message.includes('No such subscription')) {
+        throw new HttpsError('not-found', 'Subscription not found – it may have already ended. Check stripe.com.');
+      } else if (error.code === 'StripeCardError') {
+        throw new HttpsError('invalid-argument', 'Payment issue – update card at stripe.com.');
+      } else if (error.message.includes('permission_denied')) {
+        throw new HttpsError('permission-denied', 'Access denied – try again.');
+      }
+      
+      // Fallback
+      throw new HttpsError('internal', 'Cancel failed unexpectedly: ' + error.message);
+    }
+  }
+);
