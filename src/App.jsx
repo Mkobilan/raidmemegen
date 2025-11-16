@@ -668,126 +668,141 @@ const response = await fetch(functionUrl, {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4">
-      <header className="mb-32 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-green-400">Raid Gen</h1>
-        {user ? (
-          <span className="text-green-400">
-            Welcome, {user.displayName || user.email}! {pro && '(Pro)'} 
-            <button onClick={handleLogout} className="underline focus:outline-none ml-2">
-              Logout
-            </button>
-          </span>
-        ) : (
-          <button onClick={() => setShowAuthModal(true)} className="bg-green-500 px-4 py-2 rounded focus:outline-none">
-            Login / Sign Up
+  <div className="min-h-screen bg-gray-900 p-4">
+    <header className="mb-8 flex justify-between items-center">
+      <h1 className="text-3xl font-bold text-green-400">Raid Gen</h1>
+      {user ? (
+        <span className="text-green-400">
+          Welcome, {user.displayName || user.email}! {pro && '(Pro)'} 
+          <button onClick={handleLogout} className="underline focus:outline-none ml-2">
+            Logout
           </button>
-        )}
-      </header>
+        </span>
+      ) : (
+        <button onClick={() => setShowAuthModal(true)} className="bg-green-500 px-4 py-2 rounded focus:outline-none">
+          Login / Sign Up
+        </button>
+      )}
+    </header>
 
-      {/* SEO Intro Paragraphs */}
+    {/* Native Static Base Tags – Always renders, overrides index.html */}
+    <title>Raid Meme Generator: Custom Plans for Destiny 2, WoW & Helldivers 2</title>
+    <meta name="description" content="Generate custom raid plans with meme chaos for Destiny 2 raids, World of Warcraft strategies, Helldivers 2 squad missions, and more." />
+    <meta property="og:title" content="Raid Meme Gen: Custom Raid Plans for Gamers" />
+    <meta property="og:description" content="Create hilarious or serious raid strategies for your squad. Destiny 2, WoW, Helldivers 2—generate plans with phases and timelines." />
+    <meta property="og:image" content="https://raidmemegen.vercel.app/vite.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {/* SEO Intro Paragraphs */}
     <div className="max-w-4xl mx-auto mb-8 text-center bg-gray-800 p-6 rounded-lg border border-green-400">
       <h2 className="text-2xl font-bold mb-4 text-green-400">Raid Generator: Custom Plans for Arc Raiders, Destiny 2, WoW & Helldivers 2</h2>
       <p className="text-lg mb-4 text-white">Dive into the ultimate <strong>raid generator</strong> designed for gamers tackling tough content. Whether you're building a <strong>Destiny 2 raid generator</strong> strategy for Vault of Glass or a <strong>WoW raid strategy generator</strong> for mythic bosses, this tool creates squad-specific plans with phases, estimated times, and timeline charts. Add a twist with "Meme Chaos" vibe for funny raid plans that roast your wipes, or go "Serious Strat" for focused <strong>Helldivers 2 squad plans</strong>.</p>
       <p className="text-lg text-white">Tailored for MMOs like Final Fantasy XIV savage raids, Path of Exile 2 encounters, and Monster Hunter Wilds hunts—select your game, raid, squad size (3-6 players), and generate <strong>meme raid strategies</strong> instantly. Free tier: 3 gens/day. Pro: Unlimited for $5/mo. Export as PDF, share links, or save to your account. Less wipes, more laughs—start generating!</p>
     </div>
 
-      {showAuthModal && (
-        <AuthModal
-          isSignup={isSignup}
-          email={email}
-          password={password}
-          displayName={displayName}
-          authError={authError}
-          setEmail={setEmail}
-          setPassword={setPassword}
-          setDisplayName={setDisplayName}
-          onAuthSubmit={handleAuth}
-          onToggleSignup={toggleSignup}
-          onClose={closeAuthModal}
-        />
-      )}
-      {showUpgradeModal && (
-        <UpgradeModal onUpgrade={upgradeToPro} onClose={closeUpgradeModal} />
-      )}
+    {showAuthModal && (
+      <AuthModal
+        isSignup={isSignup}
+        email={email}
+        password={password}
+        displayName={displayName}
+        authError={authError}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        setDisplayName={setDisplayName}
+        onAuthSubmit={handleAuth}
+        onToggleSignup={toggleSignup}
+        onClose={closeAuthModal}
+      />
+    )}
+    {showUpgradeModal && (
+      <UpgradeModal onUpgrade={upgradeToPro} onClose={closeUpgradeModal} />
+    )}
 
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8">
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8">
+        <div className="flex-1">
+          <label className="block text-green-400 mb-2">Game:</label>
+          <select
+            value={game}
+            onChange={(e) => { setGame(e.target.value); setRaid(''); }}
+            className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
+          >
+            <option value="">Select Game</option>
+            <option value="Destiny 2">Destiny 2</option>
+            <option value="World of Warcraft">World of Warcraft</option>
+            <option value="Arc Raiders">Arc Raiders</option>
+            <option value="Helldivers 2">Helldivers 2</option>
+            <option value="Final Fantasy XIV">Final Fantasy XIV</option>
+            <option value="Path of Exile 2">Path of Exile 2</option>
+            <option value="Monster Hunter Wilds">Monster Hunter Wilds</option>
+          </select>
+        </div>
+        {availableRaids.length > 0 && (
           <div className="flex-1">
-            <label className="block text-green-400 mb-2">Game:</label>
+            <label className="block text-green-400 mb-2">Raid:</label>
             <select
-              value={game}
-              onChange={(e) => { setGame(e.target.value); setRaid(''); }}
+              value={raid}
+              onChange={(e) => setRaid(e.target.value)}
               className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
             >
-              <option value="">Select Game</option>
-              <option value="Destiny 2">Destiny 2</option>
-              <option value="World of Warcraft">World of Warcraft</option>
-              <option value="Arc Raiders">Arc Raiders</option>
-              <option value="Helldivers 2">Helldivers 2</option>
-              <option value="Final Fantasy XIV">Final Fantasy XIV</option>
-              <option value="Path of Exile 2">Path of Exile 2</option>
-              <option value="Monster Hunter Wilds">Monster Hunter Wilds</option>
+              <option value="">Select Raid</option>
+              {availableRaids.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
             </select>
           </div>
-          {availableRaids.length > 0 && (
-            <div className="flex-1">
-              <label className="block text-green-400 mb-2">Raid:</label>
-              <select
-                value={raid}
-                onChange={(e) => setRaid(e.target.value)}
-                className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
-              >
-                <option value="">Select Raid</option>
-                {availableRaids.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
-          <div className="flex-1">
-            <label className="block text-green-400 mb-2">Squad Size:</label>
-            <input
-              type="number"
-              min="3"
-              max="6"
-              value={squadSize}
-              onChange={(e) => setSquadSize(parseInt(e.target.value) || 6)}
-              className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-green-400 mb-2">Vibe:</label>
-            <select
-              value={vibe}
-              onChange={(e) => setVibe(e.target.value)}
-              className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
-            >
-              <option value="Meme Chaos">Meme Chaos</option>
-              <option value="Serious Strat">Serious Strat</option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          onClick={generateRaid}
-          disabled={isButtonDisabled}
-          className="w-full bg-green-500 px-4 py-2 rounded disabled:opacity-50 focus:outline-none"
-        >
-          {buttonText}
-        </button>
-
-        {/* Add gens count display */}
-        {!pro && user && (
-          <p className="text-sm text-green-400 mt-2 text-center">
-            {gensCount}/3 Gens Today
-          </p>
         )}
+      </div>
 
-        {plan && (
+      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
+        <div className="flex-1">
+          <label className="block text-green-400 mb-2">Squad Size:</label>
+          <input
+            type="number"
+            min="3"
+            max="6"
+            value={squadSize}
+            onChange={(e) => setSquadSize(parseInt(e.target.value) || 6)}
+            className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-green-400 mb-2">Vibe:</label>
+          <select
+            value={vibe}
+            onChange={(e) => setVibe(e.target.value)}
+            className="w-full p-2 bg-gray-700 text-green-400 border border-green-400 rounded focus:outline-none focus:border-green-500"
+          >
+            <option value="Meme Chaos">Meme Chaos</option>
+            <option value="Serious Strat">Serious Strat</option>
+          </select>
+        </div>
+      </div>
+
+      <button
+        onClick={generateRaid}
+        disabled={isButtonDisabled}
+        className="w-full bg-green-500 px-4 py-2 rounded disabled:opacity-50 focus:outline-none"
+      >
+        {buttonText}
+      </button>
+
+      {/* Add gens count display */}
+      {!pro && user && (
+        <p className="text-sm text-green-400 mt-2 text-center">
+          {gensCount}/3 Gens Today
+        </p>
+      )}
+
+      {plan && (
+        <>
+          {/* Dynamic Tags for Generated Plans */}
+          <title>{`${game} ${raid} Raid Plan | Raid Gen`}</title>
+          <meta name="description" content={`Custom ${vibe} raid plan for ${squadSize}-player squad in ${game}'s ${raid}. Phases, timeline, and ${vibe === 'Meme Chaos' ? 'funny wipes' : 'serious strats'}.`} />
+          <meta property="og:title" content={`${game} ${raid} Meme Raid Strategy`} />
+          <meta property="og:description" content={`Generated plan: ${plan.title}. Est. time: ${plan.phases.reduce((a, b) => a + b.time, 0)} mins.`} />
+
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-green-400">{plan.title}</h2>
             <div className="bg-gray-800 p-4 rounded">
@@ -813,67 +828,68 @@ const response = await fetch(functionUrl, {
               )}
             </div>
           </div>
-        )}
+        </>
+      )}
 
-        {user && savedRaids.length > 0 && (
-          <div className="bg-gray-800 p-4 rounded">
-            <h3 className="text-xl font-bold text-green-400 mb-4">Saved Raids</h3>
-            <div className="space-y-2">
-              {savedRaids.map((saved) => (
-                <div key={saved.id} className="flex justify-between items-center p-2 bg-gray-700 rounded">
-                  <span className="text-green-400">{saved.title} ({saved.raid})</span>
-                  <div>
-                    <button onClick={() => loadSavedRaid(saved)} className="bg-green-500 px-2 py-1 rounded mr-2 focus:outline-none">Load</button>
-                    <button onClick={() => deleteSavedRaid(saved.id)} className="bg-red-500 px-2 py-1 rounded focus:outline-none">Delete</button>
-                  </div>
+      {user && savedRaids.length > 0 && (
+        <div className="bg-gray-800 p-4 rounded">
+          <h3 className="text-xl font-bold text-green-400 mb-4">Saved Raids</h3>
+          <div className="space-y-2">
+            {savedRaids.map((saved) => (
+              <div key={saved.id} className="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span className="text-green-400">{saved.title} ({saved.raid})</span>
+                <div>
+                  <button onClick={() => loadSavedRaid(saved)} className="bg-green-500 px-2 py-1 rounded mr-2 focus:outline-none">Load</button>
+                  <button onClick={() => deleteSavedRaid(saved.id)} className="bg-red-500 px-2 py-1 rounded focus:outline-none">Delete</button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-       <div className="text-center pt-8">
-  {user ? (
-    pro ? (
-      <div className="space-y-2">
-        <button
-          disabled={loading}
-          className="bg-green-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-green-400 disabled:opacity-50"
-        >
-          {loading ? 'Canceling...' : 'Pro Account Active – Unlimited Chaos! 🚀'}
-        </button>
-        <button
-          onClick={cancelPro}
-          disabled={loading}
-          className="bg-red-500 text-white px-6 py-3 rounded font-bold focus:outline-none hover:bg-red-400 disabled:opacity-50"
-        >
-          {loading ? 'Canceling...' : 'Cancel Pro Subscription'}
-        </button>
-        <p className="text-sm text-gray-400 mt-2">
-          Manage billing at <a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">stripe.com</a>
-        </p>
-      </div>
-    ) : (
-      <button
-        onClick={upgradeToPro}
-        disabled={loading}
-        className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400 disabled:opacity-50"
-      >
-        {loading ? 'Upgrading...' : 'Go Pro for Unlimited Gens & Squad Fun ($5/mo)'}
-      </button>
-    )
-  ) : (
-    <button
-      onClick={() => setShowAuthModal(true)}
-      className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400"
-    >
-      Log In to Go Pro ($5/mo)
-    </button>
-  )}
-</div>
+      <div className="text-center pt-8">
+        {user ? (
+          pro ? (
+            <div className="space-y-2">
+              <button
+                disabled={loading}
+                className="bg-green-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-green-400 disabled:opacity-50"
+              >
+                {loading ? 'Canceling...' : 'Pro Account Active – Unlimited Chaos! 🚀'}
+              </button>
+              <button
+                onClick={cancelPro}
+                disabled={loading}
+                className="bg-red-500 text-white px-6 py-3 rounded font-bold focus:outline-none hover:bg-red-400 disabled:opacity-50"
+              >
+                {loading ? 'Canceling...' : 'Cancel Pro Subscription'}
+              </button>
+              <p className="text-sm text-gray-400 mt-2">
+                Manage billing at <a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">stripe.com</a>
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={upgradeToPro}
+              disabled={loading}
+              className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400 disabled:opacity-50"
+            >
+              {loading ? 'Upgrading...' : 'Go Pro for Unlimited Gens & Squad Fun ($5/mo)'}
+            </button>
+          )
+        ) : (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="bg-yellow-500 text-black px-6 py-3 rounded font-bold focus:outline-none hover:bg-yellow-400"
+          >
+            Log In to Go Pro ($5/mo)
+          </button>
+        )}
       </div>
     </div>
-  ); 
+  </div>
+);
 }
 
 export default App;

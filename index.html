@@ -22,6 +22,35 @@
     
     <!-- Canonical -->
     <link rel="canonical" href="https://raidmemegen.vercel.app/" />
+
+    <!-- Structured Data: JSON-LD Schema for SoftwareApplication -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Raid Meme Gen",
+        "description": "A custom raid plan generator for games like Destiny 2, WoW, and Helldivers 2, with meme chaos vibes and squad strategies.",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "5",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock",
+          "validFrom": "2025-11-16"
+        },
+        "url": "https://raidmemegen.vercel.app/",
+        "provider": {
+          "@type": "Organization",
+          "name": "Raid Meme Gen"
+        },
+        "featureList": [
+          "Custom raid plans",
+          "Meme chaos mode",
+          "Unlimited generations (Pro)"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
