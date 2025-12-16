@@ -25,7 +25,7 @@ ChartJS.register(
     Legend
 );
 
-const RaidPlan = ({ plan, onExportPDF, onShare }) => {
+const RaidPlan = ({ plan, onExportPDF, onShare, onSave }) => {
     const [selectedPhase, setSelectedPhase] = useState(null);
 
     if (!plan) return null;
@@ -93,11 +93,19 @@ const RaidPlan = ({ plan, onExportPDF, onShare }) => {
                     GENERATED PROTOCOL
                 </h2>
                 <div className="flex space-x-4">
-                    <button onClick={onShare} className="flex items-center text-gray-400 hover:text-raid-neon transition-colors">
-                        <Share2 className="w-4 h-4 mr-2" /> Share Link
+                    <button onClick={onShare} className="hidden md:flex items-center text-gray-400 hover:text-raid-neon transition-colors">
+                        <Share2 className="w-4 h-4 mr-2" /> Share
                     </button>
+
+                    <button
+                        onClick={onSave}
+                        className="bg-raid-neon/10 hover:bg-raid-neon/20 text-raid-neon px-4 py-2 rounded border border-raid-neon/50 flex items-center transition-all shadow-[0_0_10px_rgba(0,255,136,0.1)] hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                    >
+                        <ZoomIn className="w-4 h-4 mr-2" /> Save Plan
+                    </button>
+
                     <button onClick={onExportPDF} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 flex items-center transition-colors">
-                        <Download className="w-4 h-4 mr-2" /> Export PDF
+                        <Download className="w-4 h-4 mr-2" /> Export
                     </button>
                 </div>
             </div>

@@ -7,7 +7,9 @@ import RaidPlan from './components/raid/RaidPlan';
 import UpgradeModal from './components/raid/UpgradeModal';
 import { useAuth } from './hooks/useAuth';
 import { useRaidGen } from './hooks/useRaidGen';
-import { auth } from './firebase';
+import SavedRaidsModal from './components/raid/SavedRaidsModal';
+import { collection, addDoc, query, where, getDocs, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { db } from './firebase';
 
 function App() {
   // Auth Hook
@@ -26,7 +28,11 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showSavedModal, setShowSavedModal] = useState(false);
   const [authError, setAuthError] = useState('');
+
+  // Saved Raids State
+  const [savedRaids, setSavedRaids] = useState([]);
 
   // Raid Gen Hook
   const {
@@ -37,7 +43,64 @@ function App() {
     setPlan
   } = useRaidGen(user, pro, gensCount, () => setShowUpgradeModal(true));
 
-  // Handle successful login/signup to close modal
+  // --- SAVED RAIDS LOGIC ---
+  const fetchSavedRaids = async () => {
+    if (!user) return;
+    try {
+      const q = query(
+        collection(db, 'users', user.uid, 'raids'),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const raids = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSavedRaids(raids);
+      setShowSavedModal(true);
+    } catch (error) {
+      console.error("Error fetching raids:", error);
+      alert("Failed to load saved raids.");
+    }
+  };
+
+  const saveRaid = async () => {
+    if (!user) {
+      setIsSignup(false);
+      setShowAuthModal(true);
+      return;
+    }
+    if (!plan) return;
+
+    try {
+      // Basic title from plan details
+      const title = `${plan.game} - ${plan.raid} Protocol`;
+
+      await addDoc(collection(db, 'users', user.uid, 'raids'), {
+        ...plan,
+        title,
+        createdAt: serverTimestamp()
+      });
+      alert('Raid saved to archive!');
+    } catch (error) {
+      console.error("Error saving raid:", error);
+      alert("Failed to save raid.");
+    }
+  };
+
+  const deleteRaid = async (raidId) => {
+    if (!confirm('Are you sure you want to delete this plan?')) return;
+    try {
+      await deleteDoc(doc(db, 'users', user.uid, 'raids', raidId));
+      setSavedRaids(prev => prev.filter(r => r.id !== raidId));
+    } catch (error) {
+      console.error("Error deleting raid:", error);
+    }
+  };
+
+  const loadRaid = (raid) => {
+    setPlan(raid);
+    setShowSavedModal(false);
+  };
+
+  // --- AUTH ---
   const handleAuthSubmit = async ({ email, password, displayName }) => {
     setAuthError('');
     try {
@@ -80,11 +143,6 @@ function App() {
     }
   };
 
-  // Check URL params for shared links
-  // We can let RaidGenerator handle internal state, or pass it in. 
-  // To keep React simple, we'll just let the Plan display if one is generated.
-  // Ideally, generating from URL would happen inside the hook, but for now we'll stick to manual generation to avoid side-effect complexity.
-
   return (
     <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-raid-neon selection:text-black flex flex-col">
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none z-0"></div>
@@ -95,6 +153,7 @@ function App() {
           isPro={pro}
           onLoginClick={() => { setIsSignup(false); setShowAuthModal(true); }}
           onLogoutClick={logout}
+          onSavedClick={fetchSavedRaids}
         />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 w-full flex-grow">
@@ -125,6 +184,7 @@ function App() {
               <RaidPlan
                 plan={plan}
                 onExportPDF={() => exportPDF(plan)}
+                onSave={saveRaid}
                 onShare={() => {
                   navigator.clipboard.writeText(window.location.href);
                   alert('Link copied to clipboard!');
@@ -145,6 +205,14 @@ function App() {
         onSubmit={handleAuthSubmit}
         error={authError}
         authLoading={authLoading}
+      />
+
+      <SavedRaidsModal
+        isOpen={showSavedModal}
+        onClose={() => setShowSavedModal(false)}
+        savedRaids={savedRaids}
+        onLoad={loadRaid}
+        onDelete={deleteRaid}
       />
 
       <UpgradeModal
