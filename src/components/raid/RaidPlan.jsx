@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Share2, Clock, Terminal } from 'lucide-react';
+import { Download, Share2, Clock, Terminal, ZoomIn } from 'lucide-react';
 import Card from '../ui/Card';
+import PhaseDetailsModal from './PhaseDetailsModal';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -24,6 +26,8 @@ ChartJS.register(
 );
 
 const RaidPlan = ({ plan, onExportPDF, onShare }) => {
+    const [selectedPhase, setSelectedPhase] = useState(null);
+
     if (!plan) return null;
 
     const chartData = {
@@ -114,7 +118,15 @@ const RaidPlan = ({ plan, onExportPDF, onShare }) => {
             >
                 {plan.phases.map((phase, idx) => (
                     <motion.div key={idx} variants={item} className="h-full">
-                        <div className="bg-gray-900 border border-gray-800 hover:border-raid-neon/50 rounded-xl overflow-hidden h-full flex flex-col hover:shadow-[0_0_15px_rgba(0,255,136,0.15)] transition-all duration-300 group">
+                        <div
+                            onClick={() => setSelectedPhase(phase)}
+                            className="bg-gray-900 border border-gray-800 hover:border-raid-neon/50 rounded-xl overflow-hidden h-full flex flex-col hover:shadow-[0_0_15px_rgba(0,255,136,0.15)] transition-all duration-300 group cursor-pointer relative"
+                        >
+                            {/* Expand Hint */}
+                            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 p-1 rounded-full text-raid-neon">
+                                <ZoomIn size={16} />
+                            </div>
+
                             {/* Meme Header */}
                             <div className="relative h-48 overflow-hidden bg-black">
                                 {phase.meme ? (
@@ -141,13 +153,13 @@ const RaidPlan = ({ plan, onExportPDF, onShare }) => {
                                     <h3 className="text-lg font-bold text-white mb-2 group-hover:text-raid-neon transition-colors">
                                         {phase.name}
                                     </h3>
-                                    <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                                    <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3">
                                         {phase.text}
                                     </p>
                                 </div>
 
                                 <div className="border-t border-gray-800 pt-3 mt-2">
-                                    <p className="text-xs text-gray-500 font-mono italic">
+                                    <p className="text-xs text-gray-500 font-mono italic truncate">
                                         "{phase.quip}"
                                     </p>
                                 </div>
@@ -156,6 +168,12 @@ const RaidPlan = ({ plan, onExportPDF, onShare }) => {
                     </motion.div>
                 ))}
             </motion.div>
+
+            <PhaseDetailsModal
+                isOpen={!!selectedPhase}
+                onClose={() => setSelectedPhase(null)}
+                phase={selectedPhase}
+            />
         </div>
     );
 };
