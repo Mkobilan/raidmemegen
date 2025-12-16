@@ -56,7 +56,7 @@ const RaidGenerator = ({
                 <div className="space-y-2">
                     <label className="text-gray-400 font-medium flex items-center">
                         <div className="w-4 h-4 mr-2 rounded-full border border-raid-neon flex items-center justify-center text-[10px] text-raid-neon">R</div>
-                        Operation (Raid)
+                        Mission / Raid / Hunt
                     </label>
                     <select
                         value={raid}
