@@ -4,6 +4,9 @@ import { X, Trash2, Play, Calendar } from 'lucide-react';
 const SavedRaidsModal = ({ isOpen, onClose, savedRaids, onLoad, onDelete }) => {
     if (!isOpen) return null;
 
+    // Deduplicate raids by ID just in case
+    const uniqueRaids = Array.from(new Map(savedRaids.map(raid => [raid.id, raid])).values());
+
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -31,13 +34,13 @@ const SavedRaidsModal = ({ isOpen, onClose, savedRaids, onLoad, onDelete }) => {
                     </div>
 
                     <div className="overflow-y-auto p-4 space-y-3 flex-grow custom-scrollbar">
-                        {savedRaids.length === 0 ? (
+                        {uniqueRaids.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">
                                 <p>No archived protocols found.</p>
                                 <p className="text-sm mt-2">Generate a plan and hit Save to store it here.</p>
                             </div>
                         ) : (
-                            savedRaids.map((raid) => (
+                            uniqueRaids.map((raid) => (
                                 <motion.div
                                     key={raid.id}
                                     layout
