@@ -21,15 +21,25 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Initialize App Check (ReCAPTCHA v3)
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+
+// Enable debug token for localhost development
+// Check console for: "App Check debug token: XXXXX-XXXXX-XXXXX-XXXXX"
+if (import.meta.env.DEV) {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('6LeSbS0sAAAAADTN6GOpS28ppuAstVv93oaOqOFU'), // Site Key
+  isTokenAutoRefreshEnabled: true
+});
+
 // Export services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const realtimeDb = getDatabase(app);
 export const storage = getStorage(app);
-export const functions = getFunctions(app, { region: 'us-central1' });  // <- Added region here
-
-// Optional: Analytics (uncomment if you want usage tracking)
-// import { getAnalytics } from 'firebase/analytics';
-// const analytics = getAnalytics(app);
+export const functions = getFunctions(app, { region: 'us-central1' });
 
 export default app;

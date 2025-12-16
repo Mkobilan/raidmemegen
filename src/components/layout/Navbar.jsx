@@ -105,6 +105,18 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                                     </button>
 
                                     <button
+                                        onClick={() => {
+                                            // Fallback to username if displayName not set, or a default
+                                            const profileUsername = user.username || user.displayName?.replace(/\s+/g, '_').toLowerCase() || 'user';
+                                            navigate(`/profile/${profileUsername}`);
+                                            setIsOpen(false);
+                                        }}
+                                        className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
+                                    >
+                                        <User className="h-4 w-4 mr-2 text-raid-neon" /> My Profile
+                                    </button>
+
+                                    <button
                                         onClick={() => { onLogoutClick(); setIsOpen(false); }}
                                         className="text-red-400 hover:text-red-300 hover:bg-red-900/20 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
                                     >

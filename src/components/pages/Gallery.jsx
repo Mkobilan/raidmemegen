@@ -50,12 +50,20 @@ const GalleryCard = ({ submission, onVote, userVote, isOwner, onDelete, onView }
             <div className="p-4">
                 {/* User info */}
                 <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                    <div
+                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent card click
+                            if (submission.username) {
+                                window.location.href = `/profile/${submission.username}`;
+                            }
+                        }}
+                    >
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-raid-neon to-green-600 flex items-center justify-center text-black font-bold text-sm">
                             {(submission.username || 'A')[0].toUpperCase()}
                         </div>
                         <div>
-                            <span className="text-white text-sm font-medium">@{submission.username || 'anonymous'}</span>
+                            <span className="text-white text-sm font-medium hover:text-raid-neon transition-colors">@{submission.username || 'anonymous'}</span>
                         </div>
                     </div>
                     {isOwner && (
