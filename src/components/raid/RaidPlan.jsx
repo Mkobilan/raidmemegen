@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Share2, Clock, Terminal, ZoomIn } from 'lucide-react';
+import { Download, Share2, Clock, Terminal, ZoomIn, Palette } from 'lucide-react';
 import Card from '../ui/Card';
 import PhaseDetailsModal from './PhaseDetailsModal';
 import { Line } from 'react-chartjs-2';
@@ -25,7 +25,7 @@ ChartJS.register(
     Legend
 );
 
-const RaidPlan = ({ plan, onExportPDF, onShare, onSave }) => {
+const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay }) => {
     const [selectedPhase, setSelectedPhase] = useState(null);
 
     if (!plan) return null;
@@ -85,7 +85,7 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave }) => {
     };
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto mt-12">
+        <div className="space-y-6 max-w-5xl mx-auto mt-12" data-raid-plan>
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <h2 className="text-2xl font-gamer font-bold text-white flex items-center">
@@ -93,7 +93,10 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave }) => {
                     GENERATED PROTOCOL
                 </h2>
                 <div className="flex space-x-4">
-                    <button onClick={onShare} className="hidden md:flex items-center text-gray-400 hover:text-raid-neon transition-colors">
+                    <button
+                        onClick={onShare}
+                        className="flex items-center bg-raid-neon/10 hover:bg-raid-neon/20 text-raid-neon px-4 py-2 rounded border border-raid-neon/50 transition-all shadow-[0_0_10px_rgba(0,255,136,0.1)] hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                    >
                         <Share2 className="w-4 h-4 mr-2" /> Share
                     </button>
 
@@ -107,6 +110,15 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave }) => {
                     <button onClick={onExportPDF} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 flex items-center transition-colors">
                         <Download className="w-4 h-4 mr-2" /> Export
                     </button>
+
+                    {onCreateOverlay && (
+                        <button
+                            onClick={onCreateOverlay}
+                            className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-4 py-2 rounded border border-purple-500/50 flex items-center transition-all shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                        >
+                            <Palette className="w-4 h-4 mr-2" /> Overlays
+                        </button>
+                    )}
                 </div>
             </div>
 

@@ -7,6 +7,8 @@ import AuthModal from '../auth/AuthModal';
 import RaidGenerator from '../raid/RaidGenerator';
 import RaidPlan from '../raid/RaidPlan';
 import UpgradeModal from '../raid/UpgradeModal';
+import ShareModal from '../raid/ShareModal';
+import OverlayCreator from '../raid/OverlayCreator';
 import { useAuth } from '../../hooks/useAuth';
 import { useRaidGen } from '../../hooks/useRaidGen';
 import SavedRaidsModal from '../raid/SavedRaidsModal';
@@ -31,6 +33,9 @@ function Home() {
     const [isSignup, setIsSignup] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [showSavedModal, setShowSavedModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [showOverlayCreator, setShowOverlayCreator] = useState(false);
+    const [shareUrl, setShareUrl] = useState('');
     const [authError, setAuthError] = useState('');
 
     // Saved Raids State
@@ -103,15 +108,14 @@ function Home() {
     };
 
     // --- SHARE LOGIC ---
-    const handleShare = async () => {
+    const handleShare = () => {
         if (!plan) return;
 
         try {
             const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(plan));
-            const shareUrl = `${window.location.origin}/share?data=${compressed}`;
-
-            await navigator.clipboard.writeText(shareUrl);
-            alert('Public share link copied to clipboard!');
+            const url = `${window.location.origin}/share?data=${compressed}`;
+            setShareUrl(url);
+            setShowShareModal(true);
         } catch (error) {
             console.error("Error generating share link:", error);
             alert("Failed to generate share link. Please try again.");
@@ -222,6 +226,7 @@ function Home() {
                                 onExportPDF={() => exportPDF(plan)}
                                 onSave={saveRaid}
                                 onShare={handleShare}
+                                onCreateOverlay={() => setShowOverlayCreator(true)}
                             />
                         )}
                     </div>
@@ -252,6 +257,19 @@ function Home() {
                 isOpen={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}
                 onUpgrade={handleUpgrade}
+            />
+
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                plan={plan}
+                shareUrl={shareUrl}
+            />
+
+            <OverlayCreator
+                isOpen={showOverlayCreator}
+                onClose={() => setShowOverlayCreator(false)}
+                plan={plan}
             />
         </div>
     );
