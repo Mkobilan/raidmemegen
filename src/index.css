@@ -1,53 +1,63 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+@theme {
+  --color-raid-neon: #00ff88;
+  --color-wipe-red: #ff4444;
+  --color-raid-dark: #0f172a;
+  --color-raid-card: #1e293b;
+  --color-raid-purple: #d946ef;
+
+  --font-gamer: Orbitron, sans-serif;
+  --font-sans: Inter, sans-serif;
+
+  --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+
+  @keyframes glow {
+    0% {
+      box-shadow: 0 0 5px #00ff88;
+    }
+
+    100% {
+      box-shadow: 0 0 20px #00ff88, 0 0 10px #00ff88;
+    }
+  }
+}
+
+/* Base Styles */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background-color: #0f0f23; /* Dark gamer base */
-  color: #00ff88; /* Neon green for all text */
-  text-shadow: 0 0 5px #00ff88; /* Subtle Matrix glow */
+  font-family: var(--font-sans);
+  background-color: var(--color-raid-dark);
+  color: var(--color-raid-neon);
+  /* Restoring the neon green preference */
 }
 
-/* Header tweaks for extra pop */
-h1, h2, h3, h4 {
-  text-shadow: 0 0 10px #00ff88; /* Brighter glow on titles */
-  color: #00ff88;
-}
-
-/* Form elements */
-select, input, button {
-  color: #00ff88;
-  background-color: #1a1a2e;
-  border: 1px solid #00ff88;
-}
-
-select option {
-  background-color: #0f0f23;
-  color: #00ff88;
-}
-
-/* Glitch effect on phases */
-.phase-card {
-  transform: skew(-1deg); /* Subtle tilt */
-  transition: transform 0.3s ease;
-}
-.phase-card:hover {
-  transform: skew(0deg) scale(1.02); /* Straighten + pop on hover */
-  animation: glitch 0.3s ease-in-out;
-}
+/* Animations from legacy */
 @keyframes glitch {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
+
+  0%,
+  100% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-2px, 2px);
+  }
+
+  40% {
+    transform: translate(-2px, -2px);
+  }
+
+  60% {
+    transform: translate(2px, 2px);
+  }
+
+  80% {
+    transform: translate(2px, -2px);
+  }
 }
 
-/* Icon/border styling */
-.phase-icon {
-  color: #ff4444; /* Wipe-red for icons */
-  font-size: 1.5em;
-  margin-right: 0.5em;
+.glitch-hover:hover {
+  animation: glitch 0.3s ease-in-out;
 }
