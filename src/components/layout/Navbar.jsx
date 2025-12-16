@@ -1,9 +1,12 @@
-import { Menu, X, User, LogOut, Zap } from 'lucide-react';
+import { Menu, X, User, LogOut, Zap, Image } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <nav className="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
@@ -13,11 +16,21 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                         <motion.div
                             whileHover={{ rotate: 5, scale: 1.1 }}
                             className="flex-shrink-0 cursor-pointer"
+                            onClick={() => navigate('/')}
                         >
                             <h1 className="text-2xl font-gamer font-bold text-transparent bg-clip-text bg-gradient-to-r from-raid-neon to-blue-500">
                                 RAID GEN
                             </h1>
                         </motion.div>
+
+                        {/* Gallery Link */}
+                        <button
+                            onClick={() => navigate('/gallery')}
+                            className={`ml-6 flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${location.pathname === '/gallery' ? 'bg-raid-neon/20 text-raid-neon border border-raid-neon/50' : 'text-gray-400 hover:text-raid-neon hover:bg-gray-800'}`}
+                        >
+                            <Image className="w-4 h-4" />
+                            Gallery
+                        </button>
                     </div>
 
                     <div className="hidden md:flex items-center ml-4">
@@ -76,6 +89,13 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                                     <div className="md:hidden text-gray-300 block px-3 py-2 rounded-md text-base font-medium border-b border-gray-700 mb-2">
                                         Logged in as: <span className="text-raid-neon">{user.displayName || user.email.split('@')[0]}</span>
                                     </div>
+
+                                    <button
+                                        onClick={() => { navigate('/gallery'); setIsOpen(false); }}
+                                        className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
+                                    >
+                                        <Image className="h-4 w-4 mr-2 text-raid-neon" /> Community Gallery
+                                    </button>
 
                                     <button
                                         onClick={() => { onSavedClick(); setIsOpen(false); }}

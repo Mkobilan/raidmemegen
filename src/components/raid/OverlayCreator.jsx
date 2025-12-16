@@ -43,14 +43,28 @@ const OverlayCreator = ({ isOpen, onClose, plan }) => {
         // Clear with transparency
         ctx.clearRect(0, 0, width, height);
 
-        // Get colors
-        const primaryColor = gameTheme === 'custom' ? customColor : selectedTheme?.primaryColor || '#00ff88';
-        const textColor = overlayType === 'custom' ? customColor : selectedOverlay?.color || primaryColor;
+        // Get colors - Game theme affects border/accent color
+        const themeColor = gameTheme === 'custom' ? customColor : selectedTheme?.primaryColor || '#00ff88';
+        const themeBgColor = gameTheme === 'custom' ? '#0a1a0f' : selectedTheme?.secondaryColor || '#1a1a2e';
 
-        // Background (semi-transparent for OBS)
+        // Text color is based on overlay type, OR theme color if using custom text
+        const textColor = overlayType === 'custom' ? themeColor : selectedOverlay?.color || themeColor;
+
+        // Border/accent uses theme color
+        const accentColor = themeColor;
+
+        // Helper to convert hex to rgba
+        const hexToRgba = (hex, alpha) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+
+        // Background (semi-transparent for OBS) - uses theme secondary color
         const bgGradient = ctx.createLinearGradient(0, 0, width, height);
-        bgGradient.addColorStop(0, 'rgba(15, 23, 42, 0.9)');
-        bgGradient.addColorStop(1, 'rgba(30, 41, 59, 0.9)');
+        bgGradient.addColorStop(0, hexToRgba(themeBgColor, 0.95));
+        bgGradient.addColorStop(1, hexToRgba(themeBgColor, 0.85));
 
         // Rounded rectangle background
         const radius = 20;
@@ -69,9 +83,9 @@ const OverlayCreator = ({ isOpen, onClose, plan }) => {
         ctx.fillStyle = bgGradient;
         ctx.fill();
 
-        // Border
+        // Border - uses theme accent color
         if (showBorder) {
-            ctx.strokeStyle = textColor;
+            ctx.strokeStyle = accentColor;
             ctx.lineWidth = 4;
             ctx.stroke();
         }
@@ -110,8 +124,8 @@ const OverlayCreator = ({ isOpen, onClose, plan }) => {
             ctx.fillText(`${plan.game} • ${plan.raid}`, width / 2, height / 2 + fontSize / 2 + 30);
         }
 
-        // Decorative lines
-        ctx.strokeStyle = textColor;
+        // Decorative lines - uses theme accent color
+        ctx.strokeStyle = accentColor;
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.5;
 
@@ -192,8 +206,8 @@ const OverlayCreator = ({ isOpen, onClose, plan }) => {
                                             key={type.id}
                                             onClick={() => setOverlayType(type.id)}
                                             className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-sm ${overlayType === type.id
-                                                    ? 'border-purple-500 bg-purple-500/20 text-purple-300'
-                                                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                                                ? 'border-purple-500 bg-purple-500/20 text-purple-300'
+                                                : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
                                                 }`}
                                         >
                                             <type.icon className="w-4 h-4" />

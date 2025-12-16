@@ -9,8 +9,10 @@ import RaidPlan from '../raid/RaidPlan';
 import UpgradeModal from '../raid/UpgradeModal';
 import ShareModal from '../raid/ShareModal';
 import OverlayCreator from '../raid/OverlayCreator';
+import SubmitGalleryModal from '../raid/SubmitGalleryModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useRaidGen } from '../../hooks/useRaidGen';
+import { useGallery } from '../../hooks/useGallery';
 import SavedRaidsModal from '../raid/SavedRaidsModal';
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -35,6 +37,7 @@ function Home() {
     const [showSavedModal, setShowSavedModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
     const [showOverlayCreator, setShowOverlayCreator] = useState(false);
+    const [showSubmitGalleryModal, setShowSubmitGalleryModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
     const [authError, setAuthError] = useState('');
 
@@ -49,6 +52,9 @@ function Home() {
         exportPDF,
         setPlan
     } = useRaidGen(user, pro, gensCount, () => setShowUpgradeModal(true));
+
+    // Gallery Hook
+    const { submitToGallery } = useGallery(user);
 
     // --- SAVED RAIDS LOGIC ---
     const fetchSavedRaids = async () => {
@@ -227,6 +233,13 @@ function Home() {
                                 onSave={saveRaid}
                                 onShare={handleShare}
                                 onCreateOverlay={() => setShowOverlayCreator(true)}
+                                onSubmitToGallery={() => {
+                                    if (!user) {
+                                        setShowAuthModal(true);
+                                        return;
+                                    }
+                                    setShowSubmitGalleryModal(true);
+                                }}
                             />
                         )}
                     </div>
@@ -270,6 +283,13 @@ function Home() {
                 isOpen={showOverlayCreator}
                 onClose={() => setShowOverlayCreator(false)}
                 plan={plan}
+            />
+
+            <SubmitGalleryModal
+                isOpen={showSubmitGalleryModal}
+                onClose={() => setShowSubmitGalleryModal(false)}
+                plan={plan}
+                onSubmit={submitToGallery}
             />
         </div>
     );

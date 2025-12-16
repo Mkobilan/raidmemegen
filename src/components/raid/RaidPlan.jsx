@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Share2, Clock, Terminal, ZoomIn, Palette } from 'lucide-react';
+import { Download, Share2, Clock, Terminal, ZoomIn, Palette, Globe } from 'lucide-react';
 import Card from '../ui/Card';
 import PhaseDetailsModal from './PhaseDetailsModal';
 import { Line } from 'react-chartjs-2';
@@ -25,7 +25,7 @@ ChartJS.register(
     Legend
 );
 
-const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay }) => {
+const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmitToGallery }) => {
     const [selectedPhase, setSelectedPhase] = useState(null);
 
     if (!plan) return null;
@@ -117,6 +117,15 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay }) => {
                             className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-4 py-2 rounded border border-purple-500/50 flex items-center transition-all shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                         >
                             <Palette className="w-4 h-4 mr-2" /> Overlays
+                        </button>
+                    )}
+
+                    {onSubmitToGallery && (
+                        <button
+                            onClick={onSubmitToGallery}
+                            className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded border border-blue-500/50 flex items-center transition-all shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                        >
+                            <Globe className="w-4 h-4 mr-2" /> Share to Gallery
                         </button>
                     )}
                 </div>
