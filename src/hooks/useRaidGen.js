@@ -82,8 +82,7 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
             const newPlan = { title, phases, squadSize, game, raid, vibe, createdAt: new Date() };
             setPlan(newPlan);
 
-            // Increment count on backend
-            await incrementGens();
+            return newPlan; // Return success
 
         } catch (error) {
             console.error('Gen logic error:', error);

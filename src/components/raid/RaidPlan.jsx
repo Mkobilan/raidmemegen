@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Share2, Clock, Terminal, ZoomIn, Palette, Globe } from 'lucide-react';
+import { Download, Share2, Clock, Terminal, ZoomIn, Palette, Globe, Swords } from 'lucide-react';
 import Card from '../ui/Card';
 import PhaseDetailsModal from './PhaseDetailsModal';
 import { Line } from 'react-chartjs-2';
@@ -25,7 +25,7 @@ ChartJS.register(
     Legend
 );
 
-const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmitToGallery }) => {
+const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmitToGallery, onStartWarRoom }) => {
     const [selectedPhase, setSelectedPhase] = useState(null);
 
     if (!plan) return null;
@@ -93,16 +93,29 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmi
                     GENERATED PROTOCOL
                 </h2>
                 <div className="flex space-x-4">
+                    {onStartWarRoom && (
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onStartWarRoom}
+                            className="flex items-center gap-2 px-4 py-2 bg-raid-neon/10 text-raid-neon rounded-lg border border-raid-neon/50 hover:bg-raid-neon hover:text-black hover:border-raid-neon transition-colors shadow-[0_0_10px_rgba(0,255,136,0.1)] hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                            title="Start Live Collab (War Room)"
+                        >
+                            <Swords size={20} />
+                            <span className="hidden sm:inline font-bold">Start War Room</span>
+                        </motion.button>
+                    )}
+
                     <button
                         onClick={onShare}
-                        className="flex items-center bg-raid-neon/10 hover:bg-raid-neon/20 text-raid-neon px-4 py-2 rounded border border-raid-neon/50 transition-all shadow-[0_0_10px_rgba(0,255,136,0.1)] hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                        className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 transition-colors"
                     >
                         <Share2 className="w-4 h-4 mr-2" /> Share
                     </button>
 
                     <button
                         onClick={onSave}
-                        className="bg-raid-neon/10 hover:bg-raid-neon/20 text-raid-neon px-4 py-2 rounded border border-raid-neon/50 flex items-center transition-all shadow-[0_0_10px_rgba(0,255,136,0.1)] hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                        className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 flex items-center transition-colors"
                     >
                         <ZoomIn className="w-4 h-4 mr-2" /> Save Plan
                     </button>

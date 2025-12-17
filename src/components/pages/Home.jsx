@@ -130,6 +130,34 @@ function Home() {
     };
 
     // --- SHARE LOGIC ---
+    const handleStartWarRoom = async () => {
+        if (!user) {
+            setIsSignup(false);
+            setShowAuthModal(true);
+            return;
+        }
+        if (!plan) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('rooms')
+                .insert([{
+                    host_id: user.id,
+                    game: plan.game,
+                    active_plan: plan
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            // Navigate to room
+            window.location.href = `/room/${data.id}`;
+        } catch (error) {
+            console.error("Error creating war room:", error);
+            alert("Failed to initialize War Room.");
+        }
+    };
+
     const handleShare = () => {
         if (!plan) return;
 
@@ -241,6 +269,7 @@ function Home() {
                                 onExportPDF={() => exportPDF(plan)}
                                 onSave={saveRaid}
                                 onShare={handleShare}
+                                onStartWarRoom={handleStartWarRoom}
                                 onCreateOverlay={() => setShowOverlayCreator(true)}
                                 onSubmitToGallery={() => {
                                     if (!user) {

@@ -7,6 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [userProfile, setUserProfile] = useState(null); // Full profile data (avatar, username)
     const [authLoading, setAuthLoading] = useState(true);
     const [pro, setPro] = useState(false);
     const [gensCount, setGensCount] = useState(0);
@@ -102,6 +103,7 @@ export const AuthProvider = ({ children }) => {
                 }
                 setPro(data.is_pro || false);
                 setGensCount(todayGens);
+                setUserProfile(data); // Expose full profile
             } else {
                 console.log('fetchUserData: creating new profile');
                 // Initialize profile if missing
@@ -235,7 +237,9 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         incrementGens,
-        refreshUser
+        incrementGens,
+        refreshUser,
+        userProfile // New field
     };
 
     return (
