@@ -237,7 +237,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         incrementGens,
-        incrementGens,
+
         refreshUser,
         userProfile // New field
     };

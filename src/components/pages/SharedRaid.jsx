@@ -7,6 +7,9 @@ import Footer from '../layout/Footer';
 import RaidPlan from '../raid/RaidPlan';
 import { useAuth } from '../../hooks/useAuth';
 
+import { supabase } from '../../supabaseClient'; // Import Supabase
+import { Sword } from 'lucide-react';
+
 const SharedRaid = () => {
     const [searchParams] = useSearchParams();
     const [plan, setPlan] = useState(null);
@@ -44,6 +47,34 @@ const SharedRaid = () => {
 
         loadRaid();
     }, [searchParams]);
+
+    const handleStartWarRoom = async () => {
+        if (!user) {
+            alert('Please login to start a War Room!');
+            navigate('/'); // Or open auth modal if possible, but redirect is safer for now
+            return;
+        }
+        if (!plan) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('rooms')
+                .insert([{
+                    host_id: user.id,
+                    game: plan.game,
+                    active_plan: plan
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            // Navigate to room
+            window.location.href = `/room/${data.id}`;
+        } catch (error) {
+            console.error("Error creating war room:", error);
+            alert("Failed to initialize War Room.");
+        }
+    };
 
     if (loading) {
         return (
@@ -89,6 +120,7 @@ const SharedRaid = () => {
                                 alert("Head to the home page to generate and save your own raids!");
                                 navigate('/');
                             }}
+                            onStartWarRoom={handleStartWarRoom}
                         />
                     )}
 
