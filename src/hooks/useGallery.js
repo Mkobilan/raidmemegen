@@ -1,21 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '../firebase';
-import {
-    collection,
-    query,
-    where,
-    orderBy,
-    limit,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-    getDoc,
-    serverTimestamp,
-    increment,
-    startAfter
-} from 'firebase/firestore';
+import { supabase } from '../supabaseClient';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -24,8 +8,8 @@ export const useGallery = (user) => {
     const [featuredSubmission, setFeaturedSubmission] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasMore, setHasMore] = useState(true);
-    const [lastDoc, setLastDoc] = useState(null);
-    const [userVotes, setUserVotes] = useState({}); // { submissionId: 'up' | 'down' }
+    const [page, setPage] = useState(0);
+    const [userVotes, setUserVotes] = useState({}); // { post_id: 'up' | 'down' }
     const [gameFilter, setGameFilter] = useState('all');
 
     // Fetch user's votes
@@ -33,12 +17,16 @@ export const useGallery = (user) => {
         if (!user) return;
 
         try {
-            const votesSnapshot = await getDocs(
-                collection(db, 'users', user.uid, 'votes')
-            );
+            const { data, error } = await supabase
+                .from('votes')
+                .select('post_id, vote_type')
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
             const votes = {};
-            votesSnapshot.forEach((doc) => {
-                votes[doc.id] = doc.data().type;
+            data.forEach((v) => {
+                votes[v.post_id] = v.vote_type;
             });
             setUserVotes(votes);
         } catch (error) {
@@ -46,74 +34,76 @@ export const useGallery = (user) => {
         }
     }, [user]);
 
-    // Fetch gallery submissions - simplified to avoid composite index
+    // Fetch gallery submissions
     const fetchSubmissions = useCallback(async (reset = false) => {
         setLoading(true);
         try {
-            let q;
-            // Use simple ordering to avoid composite indexes
-            // We'll sort by createdAt DESC (newest first) for simplicity
-            const baseConstraints = [
-                orderBy('createdAt', 'desc'),
-                limit(ITEMS_PER_PAGE * 2) // Fetch more to allow for filtering
-            ];
+            const currentPage = reset ? 0 : page;
+            const from = currentPage * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
 
-            if (!reset && lastDoc) {
-                q = query(
-                    collection(db, 'gallery'),
-                    ...baseConstraints,
-                    startAfter(lastDoc)
-                );
-            } else {
-                q = query(collection(db, 'gallery'), ...baseConstraints);
+            let query = supabase
+                .from('gallery_posts')
+                .select(`
+                    *,
+                    profiles:user_id (username, display_name, avatar_url)
+                `)
+                .order('created_at', { ascending: false })
+                .range(from, to);
+
+            // Client-side game filter (or server side if exact match)
+            if (gameFilter !== 'all') {
+                query = query.eq('game', gameFilter);
             }
 
-            const snapshot = await getDocs(q);
-            let newSubmissions = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            // Transform to expected format
+            const newSubmissions = data.map(post => ({
+                id: post.id,
+                ...post,
+                userId: post.user_id,
+                username: post.profiles?.username,
+                userDisplayName: post.profiles?.display_name,
+                userAvatarUrl: post.profiles?.avatar_url
             }));
 
-            // Client-side game filter
-            if (gameFilter !== 'all') {
-                newSubmissions = newSubmissions.filter(s => s.game === gameFilter);
-            }
-
-            setHasMore(snapshot.docs.length === ITEMS_PER_PAGE * 2);
-            setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+            setHasMore(data.length === ITEMS_PER_PAGE);
 
             if (reset) {
                 setSubmissions(newSubmissions);
+                setPage(1);
             } else {
                 setSubmissions(prev => [...prev, ...newSubmissions]);
+                setPage(prev => prev + 1);
             }
         } catch (error) {
             console.error('Error fetching gallery:', error);
         }
         setLoading(false);
-    }, [gameFilter, lastDoc]);
+    }, [gameFilter, page]);
 
-    // Fetch featured submission (highest score) - simplified query
+    // Fetch featured submission
     const fetchFeatured = useCallback(async () => {
         try {
-            // Simple query - just get most recent submissions and pick highest score
-            const q = query(
-                collection(db, 'gallery'),
-                orderBy('createdAt', 'desc'),
-                limit(20)
-            );
+            // Get best score from last 20 posts
+            const { data, error } = await supabase
+                .from('gallery_posts')
+                .select(`*, profiles:user_id (username, display_name)`)
+                .order('created_at', { ascending: false })
+                .limit(20);
 
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
-                // Find the one with highest score from recent submissions
-                const submissions = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                // Sort by score descending, pick the best
-                const bestSubmission = submissions.sort((a, b) => (b.score || 0) - (a.score || 0))[0];
-                setFeaturedSubmission(bestSubmission);
+            if (data && data.length > 0) {
+                const best = data.sort((a, b) => b.score - a.score)[0];
+                setFeaturedSubmission({
+                    id: best.id,
+                    ...best,
+                    userId: best.user_id,
+                    username: best.profiles?.username,
+                    userDisplayName: best.profiles?.display_name
+                });
             }
         } catch (error) {
             console.error('Error fetching featured:', error);
@@ -126,44 +116,60 @@ export const useGallery = (user) => {
             throw new Error('Must be logged in with a valid plan');
         }
 
-        // Get user's username
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userData = userDoc.exists() ? userDoc.data() : {};
-        const username = userData.username || user.displayName || user.email?.split('@')[0] || 'Anonymous';
-
         const submission = {
-            // Plan data
+            user_id: user.id,
             game: plan.game,
             raid: plan.raid,
-            squadSize: plan.squadSize,
+            squad_size: plan.squadSize,
             vibe: plan.vibe,
-            phases: plan.phases,
-            title: plan.title || `${plan.game} - ${plan.raid}`,
-
-            // User data
-            userId: user.uid,
-            username: username,
-            userDisplayName: user.displayName || username,
-
-            // Gallery metadata
             description: description,
-            score: 0,
-            upvotes: 0,
-            downvotes: 0,
-            views: 0,
-
-            // Timestamps
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
+            phases: plan.phases,
+            title: plan.title || `${plan.game} - ${plan.raid}`
         };
 
-        const docRef = await addDoc(collection(db, 'gallery'), submission);
+        const { data, error } = await supabase
+            .from('gallery_posts')
+            .insert([submission])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Update profile stats (totalSubmitted)
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('raid_stats')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                const currentStats = profile.raid_stats || {
+                    totalGenerated: 0,
+                    totalSubmitted: 0,
+                    totalUpvotes: 0,
+                    favoriteGame: null
+                };
+
+                const newStats = {
+                    ...currentStats,
+                    totalSubmitted: (currentStats.totalSubmitted || 0) + 1
+                };
+
+                await supabase
+                    .from('profiles')
+                    .update({ raid_stats: newStats })
+                    .eq('id', user.id);
+            }
+        } catch (statError) {
+            console.error('Error updating profile stats:', statError);
+            // Don't fail the submission if stats fail
+        }
 
         // Reset and refetch
-        setLastDoc(null);
-        await fetchSubmissions(true);
+        fetchSubmissions(true);
 
-        return docRef.id;
+        return data.id;
     };
 
     // Vote on a submission
@@ -173,79 +179,108 @@ export const useGallery = (user) => {
         }
 
         const currentVote = userVotes[submissionId];
-        const submissionRef = doc(db, 'gallery', submissionId);
-        const userVoteRef = doc(db, 'users', user.uid, 'votes', submissionId);
 
         try {
             if (currentVote === voteType) {
                 // Remove vote
-                await deleteDoc(userVoteRef);
-                await updateDoc(submissionRef, {
-                    [voteType === 'up' ? 'upvotes' : 'downvotes']: increment(-1),
-                    score: increment(voteType === 'up' ? -1 : 1)
-                });
+                await supabase.from('votes').delete().match({ user_id: user.id, post_id: submissionId });
+
+                // Manual update of counts
+                // In production, use database triggers for consistency
+                const { data: post } = await supabase.from('gallery_posts').select('*').eq('id', submissionId).single();
+                await supabase
+                    .from('gallery_posts')
+                    .update({
+                        upvotes: voteType === 'up' ? Math.max(0, post.upvotes - 1) : post.upvotes,
+                        downvotes: voteType === 'down' ? Math.max(0, post.downvotes - 1) : post.downvotes,
+                        score: post.score + (voteType === 'up' ? -1 : 1)
+                    })
+                    .eq('id', submissionId);
 
                 setUserVotes(prev => {
                     const newVotes = { ...prev };
                     delete newVotes[submissionId];
                     return newVotes;
                 });
-
-                // Update local submission
-                setSubmissions(prev => prev.map(s =>
-                    s.id === submissionId
-                        ? {
-                            ...s,
-                            [voteType === 'up' ? 'upvotes' : 'downvotes']: s[voteType === 'up' ? 'upvotes' : 'downvotes'] - 1,
-                            score: s.score + (voteType === 'up' ? -1 : 1)
-                        }
-                        : s
-                ));
             } else {
                 // Add or change vote
-                const updates = {
-                    [voteType === 'up' ? 'upvotes' : 'downvotes']: increment(1),
-                    score: increment(voteType === 'up' ? 1 : -1)
-                };
+                // 1. Upsert vote
+                await supabase.from('votes').upsert({
+                    user_id: user.id,
+                    post_id: submissionId,
+                    vote_type: voteType
+                });
 
-                // If changing vote, also decrement the old vote
+                // 2. Update post counts
+                const { data: post } = await supabase.from('gallery_posts').select('*').eq('id', submissionId).single();
+
+                let newUp = post.upvotes;
+                let newDown = post.downvotes;
+                let newScore = post.score;
+
                 if (currentVote) {
-                    updates[currentVote === 'up' ? 'upvotes' : 'downvotes'] = increment(-1);
-                    updates.score = increment(voteType === 'up' ? 2 : -2); // +1 for new, +1 for removing old (or reverse)
+                    // Changing vote
+                    if (voteType === 'up') {
+                        newUp++;
+                        newDown--;
+                        newScore += 2;
+                    } else {
+                        newDown++;
+                        newUp--;
+                        newScore -= 2;
+                    }
+                } else {
+                    // New vote
+                    if (voteType === 'up') {
+                        newUp++;
+                        newScore++;
+                    } else {
+                        newDown++;
+                        newScore--;
+                    }
                 }
 
-                await updateDoc(submissionRef, updates);
-                await addDoc(collection(db, 'users', user.uid, 'votes'), {}).catch(() => { }); // Ensure collection exists
-
-                // Use setDoc instead to overwrite
-                const { setDoc } = await import('firebase/firestore');
-                await setDoc(userVoteRef, { type: voteType, submissionId, votedAt: serverTimestamp() });
+                await supabase.from('gallery_posts').update({
+                    upvotes: newUp,
+                    downvotes: newDown,
+                    score: newScore
+                }).eq('id', submissionId);
 
                 setUserVotes(prev => ({ ...prev, [submissionId]: voteType }));
+            }
 
-                // Update local submission
-                setSubmissions(prev => prev.map(s => {
-                    if (s.id !== submissionId) return s;
+            // Refresh local state roughly
+            setSubmissions(prev => prev.map(s => {
+                if (s.id !== submissionId) return s;
+                // Simple optimistic update, not perfect but okay
+                let sUp = s.upvotes;
+                let sDown = s.downvotes;
 
-                    let newUpvotes = s.upvotes;
-                    let newDownvotes = s.downvotes;
-
-                    if (voteType === 'up') {
-                        newUpvotes += 1;
-                        if (currentVote === 'down') newDownvotes -= 1;
-                    } else {
-                        newDownvotes += 1;
-                        if (currentVote === 'up') newUpvotes -= 1;
-                    }
-
+                if (currentVote === voteType) {
                     return {
                         ...s,
-                        upvotes: newUpvotes,
-                        downvotes: newDownvotes,
-                        score: newUpvotes - newDownvotes
+                        upvotes: voteType === 'up' ? sUp - 1 : sUp,
+                        downvotes: voteType === 'down' ? sDown - 1 : sDown,
+                        score: s.score + (voteType === 'up' ? -1 : 1)
                     };
-                }));
-            }
+                } else if (currentVote) {
+                    // changing
+                    if (voteType === 'up') {
+                        return { ...s, upvotes: sUp + 1, downvotes: sDown - 1, score: s.score + 2 };
+                    } else {
+                        return { ...s, upvotes: sUp - 1, downvotes: sDown + 1, score: s.score - 2 };
+                    }
+                } else {
+                    // new
+                    return {
+                        ...s,
+                        upvotes: voteType === 'up' ? sUp + 1 : sUp,
+                        downvotes: voteType === 'down' ? sDown + 1 : sDown,
+                        score: s.score + (voteType === 'up' ? 1 : -1)
+                    };
+                }
+            }));
+
         } catch (error) {
             console.error('Error voting:', error);
             throw error;
@@ -256,12 +291,14 @@ export const useGallery = (user) => {
     const deleteSubmission = async (submissionId) => {
         if (!user) throw new Error('Must be logged in');
 
-        const submissionDoc = await getDoc(doc(db, 'gallery', submissionId));
-        if (!submissionDoc.exists() || submissionDoc.data().userId !== user.uid) {
-            throw new Error('Cannot delete submission you do not own');
-        }
+        const { error } = await supabase
+            .from('gallery_posts')
+            .delete()
+            .eq('id', submissionId)
+            .eq('user_id', user.id); // RLS handles this too
 
-        await deleteDoc(doc(db, 'gallery', submissionId));
+        if (error) throw error;
+
         setSubmissions(prev => prev.filter(s => s.id !== submissionId));
     };
 
@@ -275,7 +312,7 @@ export const useGallery = (user) => {
     // Change game filter
     const changeGameFilter = (game) => {
         setGameFilter(game);
-        setLastDoc(null);
+        setPage(0);
         setSubmissions([]);
     };
 
@@ -283,16 +320,8 @@ export const useGallery = (user) => {
     useEffect(() => {
         fetchSubmissions(true);
         fetchFeatured();
-    }, [gameFilter]);
-
-    // Fetch user votes when user changes
-    useEffect(() => {
-        if (user) {
-            fetchUserVotes();
-        } else {
-            setUserVotes({});
-        }
-    }, [user, fetchUserVotes]);
+        if (user) fetchUserVotes();
+    }, [gameFilter, user]);
 
     return {
         submissions,
@@ -307,7 +336,7 @@ export const useGallery = (user) => {
         loadMore,
         changeGameFilter,
         refresh: () => {
-            setLastDoc(null);
+            setPage(0);
             fetchSubmissions(true);
             fetchFeatured();
         }

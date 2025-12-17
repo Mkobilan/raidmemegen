@@ -14,8 +14,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useRaidGen } from '../../hooks/useRaidGen';
 import { useGallery } from '../../hooks/useGallery';
 import SavedRaidsModal from '../raid/SavedRaidsModal';
-import { collection, addDoc, query, where, getDocs, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { supabase } from '../../supabaseClient';
 
 function Home() {
     // Auth Hook
@@ -60,13 +59,15 @@ function Home() {
     const fetchSavedRaids = async () => {
         if (!user) return;
         try {
-            const q = query(
-                collection(db, 'users', user.uid, 'raids'),
-                orderBy('createdAt', 'desc')
-            );
-            const querySnapshot = await getDocs(q);
-            const raids = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setSavedRaids(raids);
+            const { data, error } = await supabase
+                .from('saved_raids')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            setSavedRaids(data);
             setShowSavedModal(true);
         } catch (error) {
             console.error("Error fetching raids:", error);
@@ -86,11 +87,19 @@ function Home() {
             // Basic title from plan details
             const title = `${plan.game} - ${plan.raid} Protocol`;
 
-            await addDoc(collection(db, 'users', user.uid, 'raids'), {
-                ...plan,
-                title,
-                createdAt: serverTimestamp()
-            });
+            const { error } = await supabase.from('saved_raids').insert([{
+                user_id: user.id,
+                game: plan.game,
+                raid: plan.raid,
+                squad_size: plan.squadSize,
+                vibe: plan.vibe,
+                phases: plan.phases,
+                title: title,
+                created_at: new Date().toISOString()
+            }]);
+
+            if (error) throw error;
+
             alert('Raid saved to archive!');
         } catch (error) {
             console.error("Error saving raid:", error);
@@ -101,7 +110,14 @@ function Home() {
     const deleteRaid = async (raidId) => {
         if (!confirm('Are you sure you want to delete this plan?')) return;
         try {
-            await deleteDoc(doc(db, 'users', user.uid, 'raids', raidId));
+            const { error } = await supabase
+                .from('saved_raids')
+                .delete()
+                .eq('id', raidId)
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
             setSavedRaids(prev => prev.filter(r => r.id !== raidId));
         } catch (error) {
             console.error("Error deleting raid:", error);
@@ -147,45 +163,37 @@ function Home() {
     const handleUpgrade = async () => {
         if (!user) return;
         try {
-            // Assuming 'auth' is available from firebase import or useAuth hook if needed
-            // But useAuth exposes 'user', so we can get token. 
-            // Note: useAuth implementation wasn't fully visible but App.jsx used auth.currentUser.
-            // I need to import 'auth' from firebase.js if I use it directly, 
-            // OR rely on 'user' object if it has getIdToken.
-            // Checking App.jsx: it used `auth.currentUser.getIdToken()`. 
-            // I need to make sure `auth` is imported. App.jsx didn't import auth explicitly in code I saw?
-            // Ah, let's check App.jsx imports again.
-            // It imported { db } from './firebase'. 
-            // Logic: const idToken = await auth.currentUser.getIdToken(); 
-            // 'auth' was NOT defined in the App.jsx imports I saw in view_file. 
-            // Wait, line 122: `const idToken = await auth.currentUser.getIdToken();`
-            // But `auth` is not imported. This might have been a bug or I missed an import.
-            // Checking imports: `import { db } from './firebase';`.
-            // Maybe it uses `user.accessToken` or `user.getIdToken()`?
-            // If `user` is from `onAuthStateChanged`, it has `getIdToken()`.
+            // Get Supabase session token
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
 
-            // I'll update it to use `user.getIdToken()` if user is present.
-            const idToken = await user.getIdToken();
-            const functionUrl = `https://us-central1-raidmemegen.cloudfunctions.net/createStripeCheckoutSession`;
+            if (!token) throw new Error('No auth token found');
+
+            // Use Vercel API route
+            const functionUrl = `/api/create-checkout`;
 
             const response = await fetch(functionUrl, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${idToken}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ data: { origin: window.location.origin } }),
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || 'Network response was not ok');
+            }
+
             const result = await response.json();
 
-            if (result.result?.sessionUrl) {
-                window.location.href = result.result.sessionUrl;
+            if (result.sessionUrl) {
+                window.location.href = result.sessionUrl;
             }
         } catch (error) {
             console.error('Upgrade failed:', error);
-            alert('Upgrade initialization failed. Please try again.');
+            alert('Upgrade initialization failed. Please ensure backend is configured. Details in console.');
         }
     };
 
@@ -296,3 +304,4 @@ function Home() {
 }
 
 export default Home;
+

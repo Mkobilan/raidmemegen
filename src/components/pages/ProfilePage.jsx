@@ -149,7 +149,7 @@ const RaidFeedCard = ({ raid, onView }) => (
 const ProfilePage = () => {
     const { username } = useParams();
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user, logout, authLoading } = useAuth();
     const { profile, loading, error, getProfileByUsername, getUserRaids } = useProfile(user);
 
     const [raids, setRaids] = useState([]);
@@ -158,7 +158,7 @@ const ProfilePage = () => {
     const [initializing, setInitializing] = useState(false);
 
     // Check if viewing own profile
-    const isOwnProfile = user && profile && user.uid === profile.id;
+    const isOwnProfile = user && profile && user.id === profile.id;
 
     useEffect(() => {
         if (username) {
@@ -173,7 +173,9 @@ const ProfilePage = () => {
     }, [profile?.id]);
 
     const loadProfile = async () => {
+        console.log('ProfilePage: loadProfile called for', username);
         await getProfileByUsername(username);
+        console.log('ProfilePage: loadProfile finished');
     };
 
     const loadRaids = async () => {
@@ -259,10 +261,17 @@ const ProfilePage = () => {
         );
     };
 
-    if (loading) {
+    console.log('ProfilePage render:', { username, loading, authLoading, profileId: profile?.id, user: user?.id });
+
+    if (loading || authLoading) {
         return (
             <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-raid-neon border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-2 border-raid-neon border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-400 text-sm font-mono">
+                        {authLoading ? 'Verifying authentication...' : 'Loading profile data...'}
+                    </p>
+                </div>
             </div>
         );
     }
@@ -270,9 +279,10 @@ const ProfilePage = () => {
     if (error || !profile) {
         // If logged in, assume it's their profile or they want to create one
         // We check if the URL username matches a normalized version of their display name, OR if we just want to offer creation
+        const displayName = user?.user_metadata?.full_name || user?.displayName || '';
         const isLikelyOwnProfile = user && (
             username === user.username ||
-            username === (user.displayName || '').replace(/\s+/g, '_').toLowerCase() ||
+            username === displayName.replace(/\s+/g, '_').toLowerCase() ||
             username === 'user' // Fallback from Navbar
         );
 
@@ -454,7 +464,7 @@ const ProfilePage = () => {
                         />
                         <StatCard
                             icon={Shield}
-                            label="Shared Plans"
+                            label="Raids Shared"
                             value={profile.raidStats?.totalSubmitted || 0}
                             color="text-blue-500"
                         />

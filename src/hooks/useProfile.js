@@ -1,16 +1,5 @@
-import { useState, useEffect } from 'react';
-import { db, storage } from '../firebase';
-import {
-    doc,
-    getDoc,
-    updateDoc,
-    query,
-    collection,
-    where,
-    getDocs,
-    serverTimestamp
-} from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 export const useProfile = (currentUser = null) => {
     const [profile, setProfile] = useState(null);
@@ -22,36 +11,27 @@ export const useProfile = (currentUser = null) => {
         setLoading(true);
         setError(null);
         try {
-            // Query for user with this username
-            const q = query(
-                collection(db, 'users'),
-                where('username', '==', username.toLowerCase())
-            );
-            const querySnapshot = await getDocs(q);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('username', username.toLowerCase())
+                .single();
 
-            if (querySnapshot.empty) {
-                setError('Profile not found');
-                setProfile(null);
-                return null;
-            }
+            if (error) throw error;
 
-            const userDoc = querySnapshot.docs[0];
-            const userData = { id: userDoc.id, ...userDoc.data() };
-
-            // Don't expose sensitive fields publicly
             const publicProfile = {
-                id: userData.id,
-                username: userData.username,
-                displayName: userData.displayName,
-                bio: userData.bio || '',
-                avatarUrl: userData.avatarUrl || '',
-                gamesPlaying: userData.gamesPlaying || [],
-                gamerTags: userData.gamerTags || {},
-                socialLinks: userData.socialLinks || {},
-                isPro: userData.isPro || false,
-                createdAt: userData.createdAt,
+                id: data.id,
+                username: data.username,
+                displayName: data.display_name,
+                bio: data.bio || '',
+                avatarUrl: data.avatar_url || '',
+                gamesPlaying: data.games_playing || [],
+                gamerTags: data.gamer_tags || {},
+                socialLinks: data.social_links || {},
+                isPro: data.is_pro || false,
+                createdAt: data.created_at,
                 // Stats
-                raidStats: userData.raidStats || {
+                raidStats: data.raid_stats || {
                     totalGenerated: 0,
                     totalSubmitted: 0,
                     totalUpvotes: 0,
@@ -63,7 +43,8 @@ export const useProfile = (currentUser = null) => {
             return publicProfile;
         } catch (err) {
             console.error('Error fetching profile:', err);
-            setError('Failed to load profile');
+            setError('Profile not found');
+            setProfile(null);
             return null;
         } finally {
             setLoading(false);
@@ -77,15 +58,30 @@ export const useProfile = (currentUser = null) => {
         setLoading(true);
         setError(null);
         try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
-            const userDoc = await getDoc(userDocRef);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
 
-            if (!userDoc.exists()) {
-                setError('Profile not found');
-                return null;
-            }
+            if (error) throw error;
 
-            const userData = { id: userDoc.id, ...userDoc.data() };
+            // Map snake_case to camelCase for internal app consistency
+            const userData = {
+                id: data.id,
+                username: data.username,
+                displayName: data.display_name,
+                bio: data.bio,
+                avatarUrl: data.avatar_url,
+                gamesPlaying: data.games_playing,
+                gamerTags: data.gamer_tags,
+                socialLinks: data.social_links,
+                isPro: data.is_pro,
+                createdAt: data.created_at,
+                raidStats: data.raid_stats,
+                email: currentUser.email
+            };
+
             setProfile(userData);
             return userData;
         } catch (err) {
@@ -103,82 +99,51 @@ export const useProfile = (currentUser = null) => {
 
         const normalizedUsername = username.toLowerCase().trim();
 
-        // Check format (alphanumeric and underscores only)
         if (!/^[a-z0-9_]+$/.test(normalizedUsername)) {
             return false;
         }
 
         try {
-            const q = query(
-                collection(db, 'users'),
-                where('username', '==', normalizedUsername)
-            );
-            const querySnapshot = await getDocs(q);
+            const { count, error } = await supabase
+                .from('profiles')
+                .select('id', { count: 'exact', head: true })
+                .eq('username', normalizedUsername)
+                .neq('id', currentUser?.id || '00000000-0000-0000-0000-000000000000'); // Exclude self
 
-            // Available if no results, OR if the only result is the current user
-            if (querySnapshot.empty) return true;
-            if (currentUser && querySnapshot.docs[0].id === currentUser.uid) return true;
-
-            return false;
+            if (error) throw error;
+            return count === 0;
         } catch (err) {
             console.error('Error checking username:', err);
             return false;
         }
     };
 
-    // Upload avatar to Firebase Storage
+    // Upload avatar to Supabase Storage
     const uploadAvatar = async (file) => {
         if (!currentUser || !file) return null;
 
-        console.log('Starting uploadAvatar with:', {
-            uid: currentUser.uid,
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-            fileObject: file
-        });
-
         try {
-            // Create a unique reference to avoid 412 Precondition Failed (overwrite conflicts)
-            // Using a timestamp ensures we are always creating a NEW file
-            const filename = `avatars/${currentUser.uid}_${Date.now()}`;
-            const avatarRef = ref(storage, filename);
+            // 1. Delete old avatar if exists (optional, but good practice)
+            // Skipped for simplicity, Supabase upsert handles overwrites often, but unique names preferred.
 
-            // Nuclear Option: Manual REST API Upload
-            // The Firebase SDK triggers 412 Precondition Failed errors in this environment.
-            // We bypass the SDK entirely and use raw fetch() with the Auth Token.
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-            const bucketName = "raidmemegen.firebasestorage.app";
-            // URL Encode the filename path (avatars/uid_timestamp)
-            const encodedName = encodeURIComponent(filename);
-            const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o?name=${encodedName}`;
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
 
-            console.log('Uploading via REST to:', uploadUrl);
-
-            // Get Auth Token
-            const token = await currentUser.getIdToken();
-
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': file.type
-                },
-                body: file
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`REST Upload Failed: ${response.status} ${response.statusText} - ${errorText}`);
+            if (uploadError) {
+                throw uploadError;
             }
 
-            const data = await response.json();
+            // Get public URL
+            const { data } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
 
-            // Construct download URL manually or use the one from response metadata
-            // Format: https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<name>?alt=media&token=<token>
-            const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedName}?alt=media&token=${data.downloadTokens}`;
-
-            return downloadUrl;
+            return data.publicUrl;
         } catch (err) {
             console.error('Error uploading avatar:', err);
             throw new Error(`Failed to upload avatar: ${err.message}`);
@@ -193,27 +158,38 @@ export const useProfile = (currentUser = null) => {
         setError(null);
 
         try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
-
-            // Prepare update data
             const updateData = {
-                ...profileData,
-                displayName: profileData.username || profileData.displayName, // Sync display name with username
-                updatedAt: serverTimestamp()
+                display_name: profileData.username || profileData.displayName,
+                updated_at: new Date().toISOString()
             };
 
-            // Normalize username if provided
-            if (updateData.username) {
-                updateData.username = updateData.username.toLowerCase().trim();
+            // Map other fields
+            if (profileData.bio !== undefined) updateData.bio = profileData.bio;
+            if (profileData.avatarUrl !== undefined) updateData.avatar_url = profileData.avatarUrl;
+            if (profileData.gamesPlaying !== undefined) updateData.games_playing = profileData.gamesPlaying;
+            if (profileData.gamerTags !== undefined) updateData.gamer_tags = profileData.gamerTags;
+            if (profileData.socialLinks !== undefined) updateData.social_links = profileData.socialLinks;
 
-                // Verify username is still available
-                const isAvailable = await checkUsernameAvailable(updateData.username);
-                if (!isAvailable) {
-                    throw new Error('Username is not available');
+            // Normalize username if provided
+            if (profileData.username) {
+                const newUsername = profileData.username.toLowerCase().trim();
+
+                // Only check availability if it's different from current
+                if (newUsername !== profile?.username) {
+                    const isAvailable = await checkUsernameAvailable(newUsername);
+                    if (!isAvailable) {
+                        throw new Error('Username is not available');
+                    }
+                    updateData.username = newUsername;
                 }
             }
 
-            await updateDoc(userDocRef, updateData);
+            const { error } = await supabase
+                .from('profiles')
+                .update(updateData)
+                .eq('id', currentUser.id);
+
+            if (error) throw error;
 
             // Refresh profile
             await getMyProfile();
@@ -231,25 +207,23 @@ export const useProfile = (currentUser = null) => {
     // Fetch user's gallery submissions for the profile raid feed
     const getUserRaids = async (userId, limitCount = 10) => {
         try {
-            const q = query(
-                collection(db, 'gallery'),
-                where('userId', '==', userId)
-            );
-            const querySnapshot = await getDocs(q);
+            const { data, error } = await supabase
+                .from('gallery_posts')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(limitCount);
 
-            const raids = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            if (error) throw error;
+
+            // Transform back to expected format if needed, mainly camelCase
+            return data.map(post => ({
+                id: post.id,
+                ...post,
+                userId: post.user_id,
+                displayGame: post.game, // Ensure compatibility
+                score: post.score || 0
             }));
-
-            // Sort by createdAt descending (newest first)
-            raids.sort((a, b) => {
-                const aTime = a.createdAt?.toMillis?.() || 0;
-                const bTime = b.createdAt?.toMillis?.() || 0;
-                return bTime - aTime;
-            });
-
-            return raids.slice(0, limitCount);
         } catch (err) {
             console.error('Error fetching user raids:', err);
             return [];

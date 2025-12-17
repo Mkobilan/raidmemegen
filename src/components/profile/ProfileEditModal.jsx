@@ -14,7 +14,8 @@ import { SiKick, SiRumble } from 'react-icons/si';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import raidsData from '../../data/raids.json';
-import { runTestUpload } from '../../test-upload'; // Diagnostic Import
+
+
 
 const UNIQUE_GAMES = [...new Set(raidsData.map(r => r.game))];
 
@@ -436,13 +437,6 @@ const ProfileEditModal = ({ isOpen, onClose, onSave, currentProfile }) => {
 
                     {/* Footer */}
                     <div className="p-4 border-t border-gray-800 bg-gray-900/50 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={runTestUpload}
-                            className="px-4 py-2.5 rounded-lg bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 transition-colors text-sm font-bold mr-auto"
-                        >
-                            Run Diagnostic
-                        </button>
                         <button
                             onClick={onClose}
                             className="px-5 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors font-medium"

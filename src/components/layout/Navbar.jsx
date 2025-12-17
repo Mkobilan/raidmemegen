@@ -38,7 +38,7 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                             <div className="text-gray-300 flex items-center bg-gray-800 px-3 py-1 rounded-full border border-gray-700 mr-4">
                                 <User className="h-4 w-4 mr-2 text-raid-neon" />
                                 <span className="font-medium text-sm truncate max-w-[150px]">
-                                    {user.displayName || user.email.split('@')[0]}
+                                    {user.user_metadata?.full_name || user.displayName || user.email?.split('@')[0]}
                                 </span>
                                 {isPro && (
                                     <span className="ml-2 bg-yellow-500/20 text-yellow-400 text-xs px-2 py-0.5 rounded font-bold border border-yellow-500/50 flex items-center">
@@ -87,7 +87,7 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                             {user ? (
                                 <>
                                     <div className="md:hidden text-gray-300 block px-3 py-2 rounded-md text-base font-medium border-b border-gray-700 mb-2">
-                                        Logged in as: <span className="text-raid-neon">{user.displayName || user.email.split('@')[0]}</span>
+                                        Logged in as: <span className="text-raid-neon">{user.user_metadata?.full_name || user.displayName || user.email?.split('@')[0]}</span>
                                     </div>
 
                                     <button
@@ -107,7 +107,9 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                                     <button
                                         onClick={() => {
                                             // Fallback to username if displayName not set, or a default
-                                            const profileUsername = user.username || user.displayName?.replace(/\s+/g, '_').toLowerCase() || 'user';
+                                            // Use metadata full_name if available, usually more reliable than root displayName for Supabase users
+                                            const displayName = user.user_metadata?.full_name || user.displayName || '';
+                                            const profileUsername = user.username || displayName.replace(/\s+/g, '_').toLowerCase() || 'user';
                                             navigate(`/profile/${profileUsername}`);
                                             setIsOpen(false);
                                         }}
@@ -117,7 +119,15 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                                     </button>
 
                                     <button
-                                        onClick={() => { onLogoutClick(); setIsOpen(false); }}
+                                        onClick={async () => {
+                                            // Ensure we close menu and await logout if possible, although onLogoutClick might be fire-and-forget
+                                            try {
+                                                await onLogoutClick();
+                                            } catch (e) {
+                                                console.error("Logout failed", e);
+                                            }
+                                            setIsOpen(false);
+                                        }}
                                         className="text-red-400 hover:text-red-300 hover:bg-red-900/20 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
                                     >
                                         <LogOut className="h-4 w-4 mr-2" /> Logout
