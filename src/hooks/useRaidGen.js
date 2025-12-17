@@ -48,28 +48,51 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
             const selectedRaidData = raidsData.find(r => r.raid === raid);
 
             const phasesPromises = selectedRaidData.phases.map(async (phase) => {
+                let template, quipOrTip, searchQuery;
+                const isSerious = vibe === 'Serious Strat';
+                const modeKey = isSerious ? 'serious' : 'meme';
+
+                // Check for new data structure
+                if (phase.modes && phase.modes[modeKey]) {
+                    const modeData = phase.modes[modeKey];
+                    template = modeData.template;
+
+                    // Select Tip or Quip
+                    const pool = isSerious ? modeData.tips : modeData.quips;
+                    quipOrTip = pool[Math.floor(seed() * pool.length)];
+
+                    searchQuery = modeData.searchQuery;
+                } else {
+                    // Fallback to Legacy
+                    template = phase.baseTemplate;
+                    quipOrTip = phase.quips[Math.floor(seed() * phase.quips.length)];
+                    searchQuery = `${game} ${isSerious ? 'gameplay' : 'fail'} ${phase.name}`;
+                }
+
+                // Common replacements
                 const role = phase.roles[Math.floor(seed() * phase.roles.length)];
                 const action = phase.actions[Math.floor(seed() * phase.actions.length)];
                 const target = phase.targets[Math.floor(seed() * phase.targets.length)];
                 const hazard = phase.hazards[Math.floor(seed() * phase.hazards.length)];
-                const quip = phase.quips[Math.floor(seed() * phase.quips.length)];
 
-                const generatedText = phase.baseTemplate
+                const generatedText = template
                     .replace('[role]', role)
                     .replace('[action]', action)
                     .replace('[target]', target)
                     .replace('[hazard]', hazard)
-                    .replace('[quip]', quip);
+                    .replace('[quip]', quipOrTip) // In case template uses it
+                    .replace('[tip]', quipOrTip); // Handle [tip] replacement
 
-                const memeQuery = `${game} ${vibe === 'Meme Chaos' ? 'fail' : 'epic'} ${phase.name}`;
-                const memeUrl = await fetchMeme(memeQuery);
+                // Fetch visual
+                const memeUrl = await fetchMeme(searchQuery);
 
                 return {
                     name: phase.name,
                     text: generatedText,
                     time: Math.floor(seed() * 10 + 5),
                     meme: memeUrl,
-                    quip: quip,
+                    quip: quipOrTip, // Can be a tip or a quip
+                    isSerious, // Flag for UI
                     roles: phase.roles
                 };
             });

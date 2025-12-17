@@ -350,8 +350,15 @@ const InteractiveRaidPlan = () => {
                                     <p className="text-gray-300 text-lg leading-relaxed mb-4 font-light">
                                         {phase.text}
                                     </p>
-                                    <p className="text-sm text-gray-500 italic border-l-2 border-raid-neon/50 pl-3">
-                                        "{phase.quip}"
+                                    <p className={`text-sm italic border-l-2 pl-3 ${phase.isSerious ? 'text-blue-400 border-blue-500 not-italic font-mono' : 'text-gray-500 border-raid-neon/50'}`}>
+                                        {phase.isSerious ? (
+                                            <>
+                                                <span className="font-bold text-xs uppercase tracking-wider block mb-1">Tactical Intel Direct:</span>
+                                                {phase.quip}
+                                            </>
+                                        ) : (
+                                            `"${phase.quip}"`
+                                        )}
                                     </p>
                                 </div>
 

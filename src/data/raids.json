@@ -5,7 +5,28 @@
     "phases": [
       {
         "name": "Kalli, the Corrupted",
-        "baseTemplate": "[role] stands on [target] plate while dodging [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] stands on [target] plate while dodging [hazard]. Meme: [quip]",
+            "quips": [
+              "'Is it Cloud Snake or Stripper Snake?'",
+              "Door logic is hard",
+              "One plate = one wipe",
+              "Just cheese it"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] clears [target] while team communicates [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Assign plates 1-6 clockwise from entrance.",
+              "Use roaming supers for knight control.",
+              "Agree on symbol callouts before starting.",
+              "Stack for DPS to maximize buff uptime."
+            ],
+            "searchQuery": "Destiny 2 Kalli gameplay"
+          }
+        },
         "roles": [
           "Plate Reader",
           "Anarchy Trapper",
@@ -29,17 +50,31 @@
           "Knight cleaves",
           "incorrect symbols",
           "wipe mechanics"
-        ],
-        "quips": [
-          "'Is it Cloud Snake or Stripper Snake?'",
-          "Door logic is hard",
-          "One plate = one wipe",
-          "Just cheese it"
         ]
       },
       {
         "name": "Shuro Chi",
-        "baseTemplate": "[role] grabs [target] prism weapon to break [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] grabs [target] prism weapon to break [hazard]. Meme: [quip]",
+            "quips": [
+              "'Stop killing the Captains early!'",
+              "Puzzle team awake?",
+              "Tempo tempo tempo",
+              "Shuro Cheese"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] uses [target] to disrupt [hazard] shield.\n**Tactical Tip:** [tip]",
+            "tips": [
+              " designate 4 puzzle solvers and 2 ad-clearers.",
+              "Don't kill the Eye of Riven until ready.",
+              "Chain supers to generate orbs for hunters."
+            ],
+            "searchQuery": "Destiny 2 Shuro Chi gameplay"
+          }
+        },
         "roles": [
           "Prism Runner",
           "Add Clear",
@@ -63,17 +98,31 @@
           "phalanx shields",
           "eye blast",
           "tempo loss"
-        ],
-        "quips": [
-          "'Stop killing the Captains early!'",
-          "Puzzle team awake?",
-          "Tempo tempo tempo",
-          "Shuro Cheese"
         ]
       },
       {
         "name": "Morgeth, the Spirekeeper",
-        "baseTemplate": "[role] cleanses [target] with [action] before [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] cleanses [target] with [action] before [hazard]. Meme: [quip]",
+            "quips": [
+              "'I have 3 stacks help'",
+              "Cleanse me daddy",
+              "One phase or kick",
+              "Ogre swoll"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] collects [target] while managing [hazard] stacks.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Take last strength only when cleanse is ready.",
+              "Establish a cleanse order: Left then Right.",
+              "Use whisper/sniper for critical spot damage."
+            ],
+            "searchQuery": "Destiny 2 Morgeth gameplay"
+          }
+        },
         "roles": [
           "Orb Collector",
           "Cleanser",
@@ -97,17 +146,31 @@
           "tornado trap",
           "dart swarms",
           "wipe timer"
-        ],
-        "quips": [
-          "'I have 3 stacks help'",
-          "Cleanse me daddy",
-          "One phase or kick",
-          "Ogre swoll"
         ]
       },
       {
         "name": "The Vault",
-        "baseTemplate": "[role] calls [target] for [action] runner while [hazard] looms. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] calls [target] for [action] runner while [hazard] looms. Meme: [quip]",
+            "quips": [
+              "'Penumbra left... wait right'",
+              "Antumbra? I thought you said Umbrella",
+              "Knight saced, wipe",
+              "Reading is hard"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] identifies [target] to guide runner past [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Remember: Penumbra is Left, Antumbra is Right.",
+              "Kill knights immediately before they reach the plate.",
+              "Call out symbols clearly and repeat if needed."
+            ],
+            "searchQuery": "Destiny 2 Vault gameplay"
+          }
+        },
         "roles": [
           "Plate Reader",
           "Forest Runner",
@@ -131,17 +194,31 @@
           "knight sacrifice",
           "timer wipe",
           "forest loops"
-        ],
-        "quips": [
-          "'Penumbra left... wait right'",
-          "Antumbra? I thought you said Umbrella",
-          "Knight saced, wipe",
-          "Reading is hard"
         ]
       },
       {
         "name": "Riven of a Thousand Voices",
-        "baseTemplate": "[role] cheeses [target] toes with [action] to skip [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] cheeses [target] toes with [action] to skip [hazard]. Meme: [quip]",
+            "quips": [
+              "'Legit Riven? Never heard of her'",
+              "Shoot the toes!",
+              "Did someone shoot an eye?",
+              "Cheese forever guardian"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] focuses DPS on [target] to bypass [hazard] mechanics.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Group up on the left wall for sword logic.",
+              "Do not shoot the eyes during cheese.",
+              "Apply debuffs immediately upon drop."
+            ],
+            "searchQuery": "Destiny 2 Riven cheese gameplay"
+          }
+        },
         "roles": [
           "Toe Biter",
           "Tractor Debuffer",
@@ -165,17 +242,31 @@
           "wipe mechanic",
           "wrong room",
           "falling down"
-        ],
-        "quips": [
-          "'Legit Riven? Never heard of her'",
-          "Shoot the toes!",
-          "Did someone shoot an eye?",
-          "Cheese forever guardian"
         ]
       },
       {
         "name": "Queenswalk",
-        "baseTemplate": "[role] carries [target] heart while team manages [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] carries [target] heart while team manages [hazard]. Meme: [quip]",
+            "quips": [
+              "'I'm inside, extend me!'",
+              "Who has the heart?",
+              "Wrong way!",
+              "Guitar error inc"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] transports [target] while team clears [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Stay inside the aura to reset creeping darkness.",
+              "Count down from 10 seconds for extension.",
+              "Bait the slam before running in."
+            ],
+            "searchQuery": "Destiny 2 Queenswalk gameplay"
+          }
+        },
         "roles": [
           "Heart Carrier",
           "Fate's Chosen",
@@ -199,12 +290,6 @@
           "creeping darkness",
           "time limit",
           "getting lost"
-        ],
-        "quips": [
-          "'I'm inside, extend me!'",
-          "Who has the heart?",
-          "Wrong way!",
-          "Guitar error inc"
         ]
       }
     ]
@@ -215,7 +300,27 @@
     "phases": [
       {
         "name": "Eranog",
-        "baseTemplate": "[role] kites [target] flamerift while raid dodges [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] kites [target] flamerift while raid dodges [hazard]. Meme: [quip]",
+            "quips": [
+              "'Don't stand in the bad'",
+              "Ring of fire!",
+              "Kill the add or wipe",
+              "Loot pinata"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] positions [target] to minimize raid damage from [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Drag boss to edge to maximize room space.",
+              "Kill the add immediately to open the fire ring.",
+              "Personal defensives on the raid-wide AOE."
+            ],
+            "searchQuery": "WoW Eranog gameplay"
+          }
+        },
         "roles": [
           "Tank",
           "Healer",
@@ -239,17 +344,31 @@
           "lava pools",
           "add overload",
           "incineration"
-        ],
-        "quips": [
-          "'Don't stand in the bad'",
-          "Ring of fire!",
-          "Kill the add or wipe",
-          "Loot pinata"
         ]
       },
       {
         "name": "Terros",
-        "baseTemplate": "[role] drops [target] pillar and baits [hazard] dust. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] drops [target] pillar and baits [hazard] dust. Meme: [quip]",
+            "quips": [
+              "'Clear the pillars!'",
+              "Box strat best strat",
+              "Wait, I'm stuck",
+              "DPS check fail"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] baits [target] to clear [hazard] zones properly.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Drop rock pillars in a neat line.",
+              "Tank clears pillars with the slam mechanic.",
+              "Don't fill the room center with puddles."
+            ],
+            "searchQuery": "WoW Terros gameplay"
+          }
+        },
         "roles": [
           "Pillar Dropper",
           "Dust Baiter",
@@ -273,17 +392,31 @@
           "shatter combo",
           "falling off",
           "enrage timer"
-        ],
-        "quips": [
-          "'Clear the pillars!'",
-          "Box strat best strat",
-          "Wait, I'm stuck",
-          "DPS check fail"
         ]
       },
       {
         "name": "Sennarth, The Cold Breath",
-        "baseTemplate": "[role] slips on [target] ice while dodging [hazard] webs. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] slips on [target] ice while dodging [hazard] webs. Meme: [quip]",
+            "quips": [
+              "'I slipped'",
+              "Life grip me!",
+              "Spiders everywhere",
+              "Elevator boss"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] navigates [target] while team controls [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Don't fall off during the pull mechanic.",
+              "Kill big spiders before they overwhelm tanks.",
+              "Spread out for the web wrap ability."
+            ],
+            "searchQuery": "WoW Sennarth gameplay"
+          }
+        },
         "roles": [
           "Web Runner",
           "Ice Slider",
@@ -307,17 +440,31 @@
           "web wrap",
           "permafrost",
           "wind push"
-        ],
-        "quips": [
-          "'I slipped'",
-          "Life grip me!",
-          "Spiders everywhere",
-          "Elevator boss"
         ]
       },
       {
         "name": "Kurog Grimtotem",
-        "baseTemplate": "[role] moves boss to [target] altar to manage [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] moves boss to [target] altar to manage [hazard]. Meme: [quip]",
+            "quips": [
+              "'Stop cleaving!'",
+              "Wrong altar!",
+              "Too many stacks",
+              "Grimtotem more like Grim-wipe"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] rotates boss to [target] to manage [hazard] uptime.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Swap altars before the damage buff gets too high.",
+              "Avoid stacking elemental mechanics on raid.",
+              "Hero/Lust on the final phase burn."
+            ],
+            "searchQuery": "WoW Kurog gameplay"
+          }
+        },
         "roles": [
           "Altar Tank",
           "Ele Shaman",
@@ -341,17 +488,31 @@
           "elemental overlap",
           "raid wide dot",
           "tank buster"
-        ],
-        "quips": [
-          "'Stop cleaving!'",
-          "Wrong altar!",
-          "Too many stacks",
-          "Grimtotem more like Grim-wipe"
         ]
       },
       {
         "name": "Broodkeeper Diurna",
-        "baseTemplate": "[role] breaks [target] eggs while raid handles [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] breaks [target] eggs while raid handles [hazard]. Meme: [quip]",
+            "quips": [
+              "'More eggs!'",
+              "Staff is 99%",
+              "Did we miss an egg?",
+              "Omlette time"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] destroys [target] before [hazard] overwhelms.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Assign a strict egg breaking team.",
+              "Tank moves boss away from reinforcing adds.",
+              "Watch the boss energy bar for wipe mechanic."
+            ],
+            "searchQuery": "WoW Diurna gameplay"
+          }
+        },
         "roles": [
           "Egg Breaker",
           "Staff Holder",
@@ -375,17 +536,31 @@
           "staff charge",
           "wildfire",
           "clutch timer"
-        ],
-        "quips": [
-          "'More eggs!'",
-          "Staff is 99%",
-          "Did we miss an egg?",
-          "Omlette time"
         ]
       },
       {
         "name": "Raszageth the Storm-Eater",
-        "baseTemplate": "[role] uses [target] charge to clear [hazard] platforms. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] uses [target] charge to clear [hazard] platforms. Meme: [quip]",
+            "quips": [
+              "'Don't get blown off!'",
+              "Plus and Minus people!",
+              "Platform 1 is safe",
+              "World first inc"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] uses [target] polarity to counter [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Match positive with negative to clear charge.",
+              "Stand near the puddles to get pushed to next platform.",
+              "Focus shield adds immediately in intermissions."
+            ],
+            "searchQuery": "WoW Raszageth gameplay"
+          }
+        },
         "roles": [
           "Push Wave Victim",
           "Charge Soaker",
@@ -409,12 +584,6 @@
           "platform fall",
           "lightning strike",
           "lightning breath"
-        ],
-        "quips": [
-          "'Don't get blown off!'",
-          "Plus and Minus people!",
-          "Platform 1 is safe",
-          "World first inc"
         ]
       }
     ]
@@ -425,7 +594,28 @@
     "phases": [
       {
         "name": "Hellpod Deployment",
-        "baseTemplate": "[role] steers hellpod into [target] to crush [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] steers hellpod into [target] to crush [hazard]. Meme: [quip]",
+            "quips": [
+              "'My leg!'",
+              "Did you bring the railgun?",
+              "I landed on a mine",
+              "Reinforcing!"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] lands on [target] to eliminate [hazard] immediately.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Steer pods onto high ground for vision.",
+              "Use drop impact to kill Chargers.",
+              "Call backend support weapons immediately.",
+              "Mark heavy units before engaging."
+            ],
+            "searchQuery": "Helldivers 2 deployment gameplay"
+          }
+        },
         "roles": [
           "Pod Steerer",
           "Loadout Forgetter",
@@ -449,17 +639,31 @@
           "water drowning",
           "instant swarm",
           "forgot weapons"
-        ],
-        "quips": [
-          "'My leg!'",
-          "Did you bring the railgun?",
-          "I landed on a mine",
-          "Reinforcing!"
         ]
       },
       {
         "name": "Main Objective: ICBM",
-        "baseTemplate": "[role] aligns [target] satellite while fighting [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] aligns [target] satellite while fighting [hazard]. Meme: [quip]",
+            "quips": [
+              "'Up Down Right Left'",
+              "Stalkers! Behind you!",
+              "Launch the nuke!",
+              "For Democracy!"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] establishes perimeter at [target] to secure [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Clear bug breaches before interacting with terminal.",
+              "Rotate radar until audio cue confirms alignment.",
+              "Keep one person on terminal, three on defense."
+            ],
+            "searchQuery": "Helldivers 2 ICBM gameplay"
+          }
+        },
         "roles": [
           "Terminal Hacker",
           "Button Masher",
@@ -483,17 +687,31 @@
           "Stalker tongue",
           "Hunter slow",
           "Meteor storm"
-        ],
-        "quips": [
-          "'Up Down Right Left'",
-          "Stalkers! Behind you!",
-          "Launch the nuke!",
-          "For Democracy!"
         ]
       },
       {
         "name": "Side Hustle: Stalker Nest",
-        "baseTemplate": "[role] drops [target] 500kg into [hazard] hole. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] drops [target] 500kg into [hazard] hole. Meme: [quip]",
+            "quips": [
+              "'Found the Super Samples!'",
+              "There's a Stalker lair nearby...",
+              "Calling in an Eagle!",
+              "Samples secured"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] tracks [target] back to source to destroy [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Follow the Stalkers back to their nest.",
+              "Destroy the nest with grenades or airstrikes immediately.",
+              "Confirm nest destruction by checking map icon."
+            ],
+            "searchQuery": "Helldivers 2 Stalker Nest gameplay"
+          }
+        },
         "roles": [
           "Nest Buster",
           "Sample Gremlin",
@@ -517,17 +735,31 @@
           "Shrieker patrol",
           "Bot drop",
           "Ion storm"
-        ],
-        "quips": [
-          "'Found the Super Samples!'",
-          "There's a Stalker lair nearby...",
-          "Calling in an Eagle!",
-          "Samples secured"
         ]
       },
       {
         "name": "Extraction Chaos",
-        "baseTemplate": "[role] holds [target] LZ while pelican [hazard] delays. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] holds [target] LZ while pelican [hazard] delays. Meme: [quip]",
+            "quips": [
+              "'Get in the ship!'",
+              "Don't extract yet!",
+              "Pelican down!",
+              "Mission Complete... mostly"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] defends [target] until Timer allows [hazard] escape.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Stay outside extraction zone until Pelican lands to avoid aggro.",
+              "Drop heavy stratagems on the ramp for cover.",
+              "Ensure all samples are picked up before boarding."
+            ],
+            "searchQuery": "Helldivers 2 extraction gameplay"
+          }
+        },
         "roles": [
           "Pelican Camper",
           "Sample Savior",
@@ -551,12 +783,6 @@
           "Pelican bug",
           "timer expiry",
           "getting left behind"
-        ],
-        "quips": [
-          "'Get in the ship!'",
-          "Don't extract yet!",
-          "Pelican down!",
-          "Mission Complete... mostly"
         ]
       }
     ]
@@ -567,7 +793,27 @@
     "phases": [
       {
         "name": "Infiltration",
-        "baseTemplate": "[role] sneaks past [target] sensors to enter [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] sneaks past [target] sensors to enter [hazard]. Meme: [quip]",
+            "quips": [
+              "'Shhh...'",
+              "I triggered it",
+              "Sniper up top",
+              "We're in"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] bypasses [target] to secure entry point near [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Stay low and use noise to distract sensors.",
+              "Disable sniper towers before crossing open ground.",
+              "Jam the sensors sequentially to avoid alarm cascade."
+            ],
+            "searchQuery": "Arc Raiders stealth gameplay"
+          }
+        },
         "roles": [
           "Stealth Scout",
           "Loot Goblin",
@@ -591,17 +837,31 @@
           "early patrol",
           "fall damage",
           "toxic gas"
-        ],
-        "quips": [
-          "'Shhh...'",
-          "I triggered it",
-          "Sniper up top",
-          "We're in"
         ]
       },
       {
         "name": "Scavenging Run",
-        "baseTemplate": "[role] loots [target] crates while drone [hazard] scans. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] loots [target] crates while drone [hazard] scans. Meme: [quip]",
+            "quips": [
+              "'Found a purple!'",
+              "I'm heavy, cover me",
+              "Tickers incoming!",
+              "Need energy cells"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] secures [target] extraction while evading [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Prioritize weapon parts for backend upgrades.",
+              "Carry only what you need to maintain mobility.",
+              "Watch corners for mimic crates before looting."
+            ],
+            "searchQuery": "Arc Raiders loot gameplay"
+          }
+        },
         "roles": [
           "Tech Scavenger",
           "Heavy Lifter",
@@ -625,17 +885,31 @@
           "heavy drone",
           "inventory full",
           "mimic crate"
-        ],
-        "quips": [
-          "'Found a purple!'",
-          "I'm heavy, cover me",
-          "Tickers incoming!",
-          "Need energy cells"
         ]
       },
       {
         "name": "Drone Encounter",
-        "baseTemplate": "[role] distracts [target] walker so team strikes [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] distracts [target] walker so team strikes [hazard]. Meme: [quip]",
+            "quips": [
+              "'Shoot the orange bit!'",
+              "It's looking at me!",
+              "EMP out!",
+              "Run away!"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] exposes [target] weakpoints for [hazard] takedown.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Tank aggro to turn the walker's back to DPS.",
+              "Use EMP grenades to interrupt the rocket barrage.",
+              "Focus fire on the eye sensor to stagger."
+            ],
+            "searchQuery": "Arc Raiders walker fight"
+          }
+        },
         "roles": [
           "Aggro Tank",
           "Weakspot Sniper",
@@ -659,17 +933,31 @@
           "stomp mechanic",
           "reinforcement call",
           "team wipe"
-        ],
-        "quips": [
-          "'Shoot the orange bit!'",
-          "It's looking at me!",
-          "EMP out!",
-          "Run away!"
         ]
       },
       {
         "name": "Extraction Tension",
-        "baseTemplate": "[role] signals [target] eval while holding off [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] signals [target] eval while holding off [hazard]. Meme: [quip]",
+            "quips": [
+              "'Where is the roller?'",
+              "Players! North!",
+              "Get the loot out!",
+              "Just leave me!"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] defends [target] signal until [hazard] arrives.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Create a defensive perimeter around the signal flare.",
+              "Smoke the LZ to obscure vision from enemy players.",
+              "Send the loot mule up first, defenders last."
+            ],
+            "searchQuery": "Arc Raiders extraction"
+          }
+        },
         "roles": [
           "Signal Man",
           "Defender",
@@ -693,12 +981,6 @@
           "final wave",
           "extract camp",
           "time out"
-        ],
-        "quips": [
-          "'Where is the roller?'",
-          "Players! North!",
-          "Get the loot out!",
-          "Just leave me!"
         ]
       }
     ]
@@ -709,7 +991,27 @@
     "phases": [
       {
         "name": "M1 - Black Cat",
-        "baseTemplate": "[role] dodges [target] lines on [hazard] tiles. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] dodges [target] lines on [hazard] tiles. Meme: [quip]",
+            "quips": [
+              "'I got mousered'",
+              "Safe spot is tiny",
+              "Knockback immune up",
+              "Meow?"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] anticipates [target] pattern to survive [hazard].\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Watch the tile glow pattern carefully.",
+              "Pop knockback immunity for the elevate mechanic.",
+              "Pre-position for the shattered floor sequence."
+            ],
+            "searchQuery": "FFXIV Black Cat clear"
+          }
+        },
         "roles": [
           "Main Tank",
           "Partner DPS",
@@ -733,17 +1035,31 @@
           "double hit",
           "shattered floor",
           "greed check"
-        ],
-        "quips": [
-          "'I got mousered'",
-          "Safe spot is tiny",
-          "Knockback immune up",
-          "Meow?"
         ]
       },
       {
         "name": "M2 - Honey B. Lovely",
-        "baseTemplate": "[role] manages [target] hearts while dodging [hazard] bees. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] manages [target] hearts while dodging [hazard] bees. Meme: [quip]",
+            "quips": [
+              "'Don't simp for the boss'",
+              "I have 3 hearts help",
+              "Tower tower tower!",
+              "Bee movie script?"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] controls [target] stacks to avoid [hazard] charm.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Drop hearts in designated zones away from group.",
+              "Soak towers with at least 2 people.",
+              "Don't reach 4 hearts or you get stunned."
+            ],
+            "searchQuery": "FFXIV Honey B Lovely clear"
+          }
+        },
         "roles": [
           "Simp DPS",
           "Heart Collector",
@@ -767,17 +1083,31 @@
           "raid wide charm",
           "poison tick",
           "getting kissed"
-        ],
-        "quips": [
-          "'Don't simp for the boss'",
-          "I have 3 hearts help",
-          "Tower tower tower!",
-          "Bee movie script?"
         ]
       },
       {
         "name": "M3 - Brute Bomber",
-        "baseTemplate": "[role] spots [target] lariat direction to avoid [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] spots [target] lariat direction to avoid [hazard]. Meme: [quip]",
+            "quips": [
+              "'Left or Right?'",
+              "Ref is blind",
+              "Bomb timer too fast",
+              "Pro wrestling physics"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] identifies [target] cue to dodge [hazard] clothesline.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Look at the raised arm to predict lariat side.",
+              "Defuse bombs before the timer hits zero.",
+              "Knockback into the safe zone, not the wall."
+            ],
+            "searchQuery": "FFXIV Brute Bomber clear"
+          }
+        },
         "roles": [
           "Lariet Caller",
           "Bomb Defuser",
@@ -801,17 +1131,31 @@
           "bomb overlap",
           "rope bounce",
           "KO"
-        ],
-        "quips": [
-          "'Left or Right?'",
-          "Ref is blind",
-          "Bomb timer too fast",
-          "Pro wrestling physics"
         ]
       },
       {
         "name": "M4 - Wicked Thunder",
-        "baseTemplate": "[role] counts [target] cannon blasts during [hazard]. Meme: [quip]",
+        "modes": {
+          "meme": {
+            "template": "[role] counts [target] cannon blasts during [hazard]. Meme: [quip]",
+            "quips": [
+              "'Is it 3 or 4?'",
+              "Sideways spark!",
+              "Math is hard",
+              "Thunderstruck"
+            ],
+            "searchQuery": "fail"
+          },
+          "serious": {
+            "template": "**Objective:** [role] computes [target] solution to survive [hazard] burst.\n**Tactical Tip:** [tip]",
+            "tips": [
+              "Count the cannon flashes: odd = safe mid, even = safe sides.",
+              "Avoid the conductive floor immediately.",
+              "Spread for the ion cannon targeting."
+            ],
+            "searchQuery": "FFXIV Wicked Thunder clear"
+          }
+        },
         "roles": [
           "Cannon Counter",
           "Witch Hunter",
@@ -835,12 +1179,6 @@
           "floor lightning",
           "wing cleavage",
           "brain lag"
-        ],
-        "quips": [
-          "'Is it 3 or 4?'",
-          "Sideways spark!",
-          "Math is hard",
-          "Thunderstruck"
         ]
       }
     ]
