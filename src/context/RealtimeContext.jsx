@@ -139,6 +139,7 @@ export const RealtimeProvider = ({ roomId, children }) => {
         if (!isConnected || !channelRef.current) return;
 
         const myDetails = {
+            user_id: user.id,
             username: userProfile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Anon',
             avatar: userProfile?.avatar_url || user?.user_metadata?.avatar_url || null,
             online_at: new Date().toISOString(),

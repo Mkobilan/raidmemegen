@@ -72,7 +72,8 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
                     text: generatedText,
                     time: Math.floor(seed() * 10 + 5),
                     meme: memeUrl, // New field!
-                    quip: quip
+                    quip: quip,
+                    roles: phase.roles // Include roles from data
                 };
             });
 

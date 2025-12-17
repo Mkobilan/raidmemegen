@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock } from 'lucide-react';
+import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown } from 'lucide-react';
 import Card from '../ui/Card';
 import { supabase } from '../../supabaseClient';
 import { useRealtimeRoom } from '../../hooks/useRealtimeRoom';
@@ -13,6 +13,12 @@ const InteractiveRaidPlan = () => {
     const { roomState: plan, updatePlan, participants, currentUser } = useRealtimeRoom();
     const [rerolling, setRerolling] = useState(null); // Index of phase being rerolled
     const [saving, setSaving] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState(null); // { phaseIdx, role }
+
+    // Flatten participants for easy access
+    const allUsers = Object.values(participants).flat();
+    // Unique users by user_id for the dropdown
+    const onlineUsers = [...new Map(allUsers.filter(u => u.user_id).map(item => [item.user_id, item])).values()];
 
     if (!plan) return (
         <div className="flex items-center justify-center h-64 text-gray-400 font-gamer animate-pulse">
@@ -99,12 +105,15 @@ const InteractiveRaidPlan = () => {
 
         // Meme Logic: ALWAYS Keep existing (Per user request)
         const meme = plan.phases[phaseIndex].meme;
+        const roles = plan.phases[phaseIndex].roles || phaseData.roles; // Ensure roles persist or strict reload
 
         return {
             ...plan.phases[phaseIndex], // Keep existing data like name
             text,
             quip,
             meme,
+            roles,
+            votes: {}, // Reset votes on reroll
             lastRerollBy: currentUser?.user_metadata?.username
         };
     };
@@ -139,27 +148,40 @@ const InteractiveRaidPlan = () => {
     // Actually, "Role Assignment" usually means assigning people to specific jobs.
     // Let's add a "Squad Roles" section to each phase.
 
-    const toggleRole = async (phaseIndex, roleSlot) => {
-        // Simple toggle: If empty, I take it. If I have it, I leave it.
-        // If someone else has it, maybe steal it? "Chaos mode" says yes.
-
+    const handleVote = async (phaseIndex, vote) => {
+        if (!currentUser) return;
         const newPhases = [...plan.phases];
         const phase = newPhases[phaseIndex];
 
-        // Initialize assignments if missing
-        if (!phase.assignments) phase.assignments = {};
-
-        const currentAssignee = phase.assignments[roleSlot];
-
-        if (currentAssignee === currentUser?.id) {
-            // I am leaving
-            delete phase.assignments[roleSlot];
-        } else {
-            // I am taking (stealing)
-            phase.assignments[roleSlot] = currentUser?.id;
-        }
+        if (!phase.votes) phase.votes = {};
+        phase.votes[currentUser.id] = vote; // 'keep' or 'reroll'
 
         await updatePlan({ ...plan, phases: newPhases });
+    };
+
+    const handleAssign = async (phaseIndex, roleName, userId) => {
+        const newPhases = [...plan.phases];
+        const phase = newPhases[phaseIndex];
+
+        if (!phase.assignments) phase.assignments = {};
+        if (!phase.assignments[roleName]) phase.assignments[roleName] = [];
+
+        // Check if already assigned
+        if (!phase.assignments[roleName].includes(userId)) {
+            phase.assignments[roleName].push(userId);
+            await updatePlan({ ...plan, phases: newPhases });
+        }
+        setActiveDropdown(null);
+    };
+
+    const handleUnassign = async (phaseIndex, roleName, userId) => {
+        const newPhases = [...plan.phases];
+        const phase = newPhases[phaseIndex];
+
+        if (phase.assignments && phase.assignments[roleName]) {
+            phase.assignments[roleName] = phase.assignments[roleName].filter(id => id !== userId);
+            await updatePlan({ ...plan, phases: newPhases });
+        }
     };
 
     return (
@@ -192,7 +214,7 @@ const InteractiveRaidPlan = () => {
                         key={`${idx}-${phase.text.substring(0, 10)}`} // Force re-render on text change for visual pop
                         initial={{ opacity: 0.8, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-gray-900/80 border border-gray-800 rounded-xl overflow-hidden relative group"
+                        className="bg-gray-900/80 border border-gray-800 rounded-xl relative group"
                     >
                         {/* Reroll Overlay */}
                         {rerolling === idx && (
@@ -203,7 +225,7 @@ const InteractiveRaidPlan = () => {
 
                         <div className="flex flex-col md:flex-row h-full">
                             {/* Visual & Meme */}
-                            <div className="md:w-1/3 h-48 md:h-auto relative">
+                            <div className="md:w-1/3 h-48 md:h-auto relative overflow-hidden rounded-t-xl md:rounded-l-xl md:rounded-tr-none">
                                 <img
                                     src={phase.meme}
                                     alt="Phase Visual"
@@ -215,10 +237,33 @@ const InteractiveRaidPlan = () => {
                                     <span className="bg-black/60 text-raid-neon px-2 py-1 rounded text-xs font-mono border border-raid-neon/30">
                                         PHASE {idx + 1}
                                     </span>
+
+                                    {/* Voting Controls */}
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleVote(idx, 'keep')}
+                                            className={`px-3 py-1 rounded text-xs font-bold border transition-colors ${phase.votes?.[currentUser?.id] === 'keep'
+                                                ? 'bg-green-500 text-black border-green-400'
+                                                : 'bg-black/50 text-gray-400 border-gray-600 hover:text-green-400'
+                                                }`}
+                                        >
+                                            Keep ({Object.values(phase.votes || {}).filter(v => v === 'keep').length})
+                                        </button>
+                                        <button
+                                            onClick={() => handleVote(idx, 'reroll')}
+                                            className={`px-3 py-1 rounded text-xs font-bold border transition-colors ${phase.votes?.[currentUser?.id] === 'reroll'
+                                                ? 'bg-red-500 text-black border-red-400'
+                                                : 'bg-black/50 text-gray-400 border-gray-600 hover:text-red-400'
+                                                }`}
+                                        >
+                                            Reroll ({Object.values(phase.votes || {}).filter(v => v === 'reroll').length})
+                                        </button>
+                                    </div>
+
                                     <button
                                         onClick={() => handleReroll(idx, phase.name)}
-                                        className="bg-gray-800/80 hover:bg-raid-neon hover:text-black text-white p-2 rounded-full transition-colors border border-gray-600 backdrop-blur-sm"
-                                        title="Reroll this phase"
+                                        className="bg-gray-800/80 hover:bg-raid-neon hover:text-black text-white p-2 rounded-full transition-colors border border-gray-600 backdrop-blur-sm shadow-lg ml-2"
+                                        title="Reroll Data Only"
                                     >
                                         <RefreshCw size={16} />
                                     </button>
@@ -240,56 +285,85 @@ const InteractiveRaidPlan = () => {
                                 {/* Dynamic Assignments Section */}
                                 <div className="mt-6 pt-4 border-t border-gray-800">
                                     <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center">
-                                        <Shield className="w-3 h-3 mr-2" /> VOLUNTEERS REQUIRED
+                                        <Shield className="w-3 h-3 mr-2" /> MISSION ROLES
                                     </h4>
 
-                                    <div className="flex flex-wrap gap-2">
-                                        {['Runner', 'Defender', 'Boss Bait', 'Meme Lord'].map((role) => {
-                                            const assignedUserId = phase.assignments?.[role];
-                                            // Find participant info for this ID
-                                            // Note: participants is Key->PresenceObj. But we need to look up by user_id actually?
-                                            // Presence keys are usually user_ids based on how we set tracking.
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {(() => {
+                                            // Fallback Logic: match phase name to static data if roles missing
+                                            let displayRoles = phase.roles;
+                                            if (!displayRoles) {
+                                                const rData = raidsData.find(r => r.raid === plan.raid);
+                                                const pData = rData?.phases.find(p => p.name === phase.name);
+                                                displayRoles = pData?.roles || ['Runner', 'Defender', 'Boss Bait', 'Meme Lord'];
+                                            }
 
-                                            // Actually, Supabase Presence state is { 'user_id': [ { username: '...', ... } ] }
-                                            // So assignedUserId checks if that key exists.
+                                            return displayRoles.map((role) => {
+                                                const assignedUserIds = phase.assignments?.[role] || [];
+                                                const isDropdownOpen = activeDropdown?.phaseIdx === idx && activeDropdown?.role === role;
 
-                                            // Let's find the username from the presence state
-                                            const assignedUser = assignedUserId ?
-                                                Object.values(participants).flat().find(p => p.username /* assuming we need to match ID, but we stored ID */)
-                                                : null;
+                                                return (
+                                                    <div key={role} className="bg-gray-950/50 p-2 rounded border border-gray-800 relative">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <span className="text-sm font-bold text-gray-300">{role}</span>
+                                                            <button
+                                                                onClick={() => setActiveDropdown(isDropdownOpen ? null : { phaseIdx: idx, role })}
+                                                                className="text-xs text-raid-neon hover:text-white flex items-center"
+                                                            >
+                                                                {assignedUserIds.length > 0 ? 'Edit' : 'Assign'}
+                                                            </button>
+                                                        </div>
 
-                                            // Wait, our `toggleRole` stores `currentUser.id`.
-                                            // `participants` state is slightly complex structure.
-                                            // Let's just trust we can find it or fallback.
+                                                        {/* Assigned Users Chips */}
+                                                        <div className="flex flex-wrap gap-2 mb-1">
+                                                            {assignedUserIds.length === 0 && (
+                                                                <span className="text-xs text-gray-600 italic">Unassigned</span>
+                                                            )}
+                                                            {assignedUserIds.map(uid => {
+                                                                const u = allUsers.find(p => p.user_id === uid) || { username: 'Unknown', avatar: null };
+                                                                // Use uid as key since it's unique in this list
+                                                                return (
+                                                                    <div key={uid} className="flex items-center bg-gray-800 rounded-full pl-1 pr-2 py-0.5 border border-gray-700">
+                                                                        <div className="w-4 h-4 rounded-full bg-gray-700 overflow-hidden mr-1">
+                                                                            {u.avatar ? <img src={u.avatar} alt={u.username} /> : <div className="text-[8px] flex items-center justify-center h-full text-white">{u.username[0]}</div>}
+                                                                        </div>
+                                                                        <span className="text-[10px] text-gray-300">{u.username.substring(0, 10)}</span>
+                                                                        <button
+                                                                            onClick={() => handleUnassign(idx, role, uid)}
+                                                                            className="ml-1 text-gray-500 hover:text-red-400"
+                                                                        >
+                                                                            <X size={10} />
+                                                                        </button>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
 
-                                            // Simplified display:
-                                            const isTaken = !!assignedUserId;
-                                            const isMe = assignedUserId === currentUser?.id;
-
-                                            return (
-                                                <button
-                                                    key={role}
-                                                    onClick={() => toggleRole(idx, role)}
-                                                    className={`
-                                                        px-3 py-2 rounded text-xs font-bold transition-all border flex items-center gap-2
-                                                        ${isMe
-                                                            ? 'bg-raid-neon text-black border-raid-neon'
-                                                            : isTaken
-                                                                ? 'bg-gray-700 text-gray-300 border-gray-600 cursor-not-allowed opacity-70'
-                                                                : 'bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-500'
-                                                        }
-                                                    `}
-                                                >
-                                                    {isTaken ? (
-                                                        <UserIcon size={12} />
-                                                    ) : (
-                                                        <span className="w-3 h-3 rounded-full border border-gray-500" />
-                                                    )}
-                                                    {role}
-                                                    {isTaken && !isMe && <span className="opacity-50 text-[10px] ml-1">(Taken)</span>}
-                                                </button>
-                                            );
-                                        })}
+                                                        {/* Dropdown */}
+                                                        {isDropdownOpen && (
+                                                            <div className="absolute top-full left-0 w-full bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden mt-1">
+                                                                {onlineUsers.map(u => {
+                                                                    const isAssigned = assignedUserIds.includes(u.user_id);
+                                                                    return (
+                                                                        <button
+                                                                            key={u.user_id}
+                                                                            onClick={() => {
+                                                                                if (!isAssigned) handleAssign(idx, role, u.user_id);
+                                                                                else handleUnassign(idx, role, u.user_id);
+                                                                            }}
+                                                                            className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-gray-800 ${isAssigned ? 'text-raid-neon bg-raid-neon/5' : 'text-gray-400'}`}
+                                                                        >
+                                                                            <span>{u.username}</span>
+                                                                            {isAssigned && <Check size={12} />}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        })()}
                                     </div>
                                 </div>
                             </div>
