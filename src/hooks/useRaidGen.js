@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import seedrandom from 'seedrandom';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import localMemes from '../data/memes.json';
 import raidsData from '../data/raids.json';
 
@@ -11,8 +12,6 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
     const [plan, setPlan] = useState(null);
 
     const fetchMeme = async (query) => {
-        // Pro check: Use API if key exists, otherwise fallback/local
-        // Actually, plan said Giphy API.
         if (!GIPHY_API_KEY) {
             console.warn('No Giphy API Key found, using local memes');
             const randomMeme = localMemes[Math.floor(Math.random() * localMemes.length)];
@@ -36,7 +35,6 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
     const generateRaid = async ({ game, raid, squadSize, vibe, incrementGens }) => {
         if (!raid) return;
         if (!user) {
-            // Caller should handle auth check, but double check
             throw new Error('User not logged in');
         }
         if (!pro && gensCount >= 3) {
@@ -63,7 +61,6 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
                     .replace('[hazard]', hazard)
                     .replace('[quip]', quip);
 
-                // Fetch meme based on the "vibe" + phase context
                 const memeQuery = `${game} ${vibe === 'Meme Chaos' ? 'fail' : 'epic'} ${phase.name}`;
                 const memeUrl = await fetchMeme(memeQuery);
 
@@ -71,9 +68,9 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
                     name: phase.name,
                     text: generatedText,
                     time: Math.floor(seed() * 10 + 5),
-                    meme: memeUrl, // New field!
+                    meme: memeUrl,
                     quip: quip,
-                    roles: phase.roles // Include roles from data
+                    roles: phase.roles
                 };
             });
 
@@ -83,7 +80,7 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
             const newPlan = { title, phases, squadSize, game, raid, vibe, createdAt: new Date() };
             setPlan(newPlan);
 
-            return newPlan; // Return success
+            return newPlan;
 
         } catch (error) {
             console.error('Gen logic error:', error);
@@ -93,22 +90,73 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
         }
     };
 
-    const exportPDF = (currentPlan) => { // Accept plan as arg or use state
+    const captureRaidImage = async (templateRef) => {
+        if (!templateRef.current) return null;
+        try {
+            const canvas = await html2canvas(templateRef.current, {
+                useCORS: true,
+                scale: 2, // Higher RES
+                backgroundColor: '#0f172a', // Slate-900 fallback
+                logging: false
+            });
+            return canvas.toDataURL('image/png');
+        } catch (error) {
+            console.error("Capture Failed:", error);
+            return null;
+        }
+    };
+
+    const exportImage = async (templateRef, fileName = 'raid-mission-card.png') => {
+        const dataUrl = await captureRaidImage(templateRef);
+        if (!dataUrl) {
+            alert('Failed to generate image. Please try again.');
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = fileName;
+        link.click();
+    };
+
+    const exportPDF = async (currentPlan, templateRef) => {
         const p = currentPlan || plan;
         if (!p) return;
 
+        // Try Visual Export first
+        if (templateRef && templateRef.current) {
+            const imgData = await captureRaidImage(templateRef);
+            if (imgData) {
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: 'a4'
+                });
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+                // Center if shorter than page, or just top align
+                doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pdfHeight);
+                doc.save(`${p.raid.replace(/\s+/g, '-').toLowerCase()}-mission.pdf`);
+                return;
+            }
+        }
+
+        // Fallback to text if visual fails
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 20;
 
-        // Cyberpunk BG
-        doc.setFillColor(15, 23, 42); // slate-900
+        doc.setFillColor(15, 23, 42);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-        doc.setFont('helvetica', 'bold'); // Orbitron not standard in jsPDF without importing font file, sticking to helvetica bold
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(22);
-        doc.setTextColor(0, 255, 136); // raid-neon
+        doc.setTextColor(0, 255, 136);
         doc.text(p.title, margin, 20);
 
         let yPos = 35;
@@ -134,17 +182,18 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
             yPos += (splitText.length * 5) + 10;
         });
 
-        doc.save('raid-plan.pdf');
+        doc.save(`${p.raid.replace(/\s+/g, '-').toLowerCase()}-plan.pdf`);
     };
 
     const clearPlan = () => setPlan(null);
 
     return {
         plan,
-        setPlan, // exposed for loadSavedRaid
+        setPlan,
         loading,
         generateRaid,
         exportPDF,
+        exportImage,
         clearPlan
     };
 };

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LZString from 'lz-string';
 import Navbar from '../layout/Navbar';
 import Footer from '../layout/Footer';
@@ -14,6 +14,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useRaidGen } from '../../hooks/useRaidGen';
 import { useGallery } from '../../hooks/useGallery';
 import SavedRaidsModal from '../raid/SavedRaidsModal';
+import RaidExportTemplate from '../raid/RaidExportTemplate';
 import { supabase } from '../../supabaseClient';
 
 function Home() {
@@ -39,6 +40,7 @@ function Home() {
     const [showSubmitGalleryModal, setShowSubmitGalleryModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
     const [authError, setAuthError] = useState('');
+    const exportRef = useRef(null);
 
     // Saved Raids State
     const [savedRaids, setSavedRaids] = useState([]);
@@ -49,6 +51,7 @@ function Home() {
         loading: genLoading,
         generateRaid,
         exportPDF,
+        exportImage,
         setPlan
     } = useRaidGen(user, pro, gensCount, () => setShowUpgradeModal(true));
 
@@ -230,6 +233,9 @@ function Home() {
         <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-raid-neon selection:text-black flex flex-col">
             <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none z-0"></div>
 
+            {/* Hidden Export Template */}
+            <RaidExportTemplate ref={exportRef} plan={plan} />
+
             <div className="relative z-10 flex-grow flex flex-col">
                 <Navbar
                     user={user}
@@ -266,7 +272,8 @@ function Home() {
                         {plan && (
                             <RaidPlan
                                 plan={plan}
-                                onExportPDF={() => exportPDF(plan)}
+                                onExportPDF={() => exportPDF(plan, exportRef)}
+                                onExportImage={() => exportImage(exportRef, `${plan.raid}-mission.png`)}
                                 onSave={saveRaid}
                                 onShare={handleShare}
                                 onStartWarRoom={handleStartWarRoom}

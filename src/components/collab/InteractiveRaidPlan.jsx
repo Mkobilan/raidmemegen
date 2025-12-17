@@ -1,19 +1,24 @@
-
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown, Download, Image as ImageIcon, FileText, Gamepad2 } from 'lucide-react';
 import Card from '../ui/Card';
 import { supabase } from '../../supabaseClient';
 import { useRealtimeRoom } from '../../hooks/useRealtimeRoom';
 import { useAuth } from '../../hooks/useAuth';
+import { useRaidGen } from '../../hooks/useRaidGen';
+import RaidExportTemplate from '../raid/RaidExportTemplate';
 import raidsData from '../../data/raids.json';
 import localMemes from '../../data/memes.json';
 
 const InteractiveRaidPlan = () => {
     const { roomState: plan, updatePlan, participants, currentUser } = useRealtimeRoom();
+    const { exportPDF, exportImage } = useRaidGen(currentUser, true, 0, () => { }); // Dummy props for export access
     const [rerolling, setRerolling] = useState(null); // Index of phase being rerolled
     const [saving, setSaving] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null); // { phaseIdx, role }
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const exportRef = useRef(null);
 
     // Flatten participants for easy access
     const allUsers = Object.values(participants).flat();
@@ -184,8 +189,17 @@ const InteractiveRaidPlan = () => {
         }
     };
 
+    // Create a lookup map for users
+    const userMap = allUsers.reduce((acc, u) => {
+        if (u.user_id) acc[u.user_id] = u;
+        return acc;
+    }, {});
+
     return (
         <div className="space-y-8 pb-20">
+            {/* Hidden Export Template */}
+            <RaidExportTemplate ref={exportRef} plan={plan} userMap={userMap} />
+
             <div className="text-center relative">
                 <h2 className="text-3xl font-gamer text-transparent bg-clip-text bg-gradient-to-r from-raid-neon to-white">
                     {plan.title}
@@ -195,8 +209,6 @@ const InteractiveRaidPlan = () => {
                         OPERATION: {plan.game.toUpperCase()} // {plan.raid.toUpperCase()} // MODE: {plan.vibe.toUpperCase()}
                     </p>
 
-                    {/* Visual Lock Toggle (Removed) */}
-
                     <button
                         onClick={handleSave}
                         disabled={saving}
@@ -205,6 +217,67 @@ const InteractiveRaidPlan = () => {
                         {saving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                         {saving ? 'Saving...' : 'Save Mission'}
                     </button>
+
+                    {/* Export Menu */}
+                    <div className="relative">
+                        <button
+                            onClick={() => !isExporting && setShowExportMenu(!showExportMenu)}
+                            disabled={isExporting}
+                            className={`bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 flex items-center gap-2 transition-colors ${showExportMenu ? 'bg-gray-700' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                            {isExporting ? <Gamepad2 className="w-3 h-3 animate-spin text-raid-neon" /> : <Download className="w-3 h-3" />}
+                            {isExporting ? 'Exporting...' : 'Export'}
+                            {!isExporting && <ChevronDown size={12} />}
+                        </button>
+
+                        <AnimatePresence>
+                            {showExportMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50"
+                                >
+                                    <button
+                                        onClick={async () => {
+                                            if (isExporting) return;
+                                            setIsExporting(true);
+                                            setShowExportMenu(false); // Close menu immediately or keep open? Better close and show loading on main button
+                                            try {
+                                                await exportPDF(plan, exportRef);
+                                            } catch (e) {
+                                                console.error(e);
+                                            } finally {
+                                                setIsExporting(false);
+                                            }
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                                    >
+                                        <FileText size={16} className="text-red-400" />
+                                        Export as PDF
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            if (isExporting) return;
+                                            setIsExporting(true);
+                                            setShowExportMenu(false);
+                                            try {
+                                                await exportImage(exportRef, `${plan.raid}-mission-card.png`);
+                                            } catch (e) {
+                                                console.error(e);
+                                            } finally {
+                                                setIsExporting(false);
+                                            }
+                                        }}
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+                                    >
+                                        <Gamepad2 size={16} className="text-raid-neon" />
+                                        Export as Image
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
 

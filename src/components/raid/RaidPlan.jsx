@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Download, Share2, Clock, Terminal, ZoomIn, Palette, Globe, Swords } from 'lucide-react';
-import Card from '../ui/Card';
-import PhaseDetailsModal from './PhaseDetailsModal';
-import { Line } from 'react-chartjs-2';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Share2, Download, Save, Copy, Check,
+    Clock, Users, AlertTriangle, Terminal,
+    Shield, Sword, Crosshair, Skull, Zap,
+    Ghost, Flame, ZoomIn, Swords, MessageSquare, Gamepad2, Loader2,
+    Palette, Globe
+} from 'lucide-react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -12,8 +15,11 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend,
+    Legend
 } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import Card from '../ui/Card';
+import PhaseDetailsModal from './PhaseDetailsModal';
 
 ChartJS.register(
     CategoryScale,
@@ -25,10 +31,23 @@ ChartJS.register(
     Legend
 );
 
-const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmitToGallery, onStartWarRoom }) => {
+const RaidPlan = ({ plan, onExportPDF, onExportImage, onShare, onSave, onCreateOverlay, onSubmitToGallery, onStartWarRoom }) => {
     const [selectedPhase, setSelectedPhase] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     if (!plan) return null;
+
+    const handleExport = async (type) => {
+        setIsExporting(true);
+        try {
+            if (type === 'pdf') await onExportPDF();
+            if (type === 'image') await onExportImage();
+        } catch (error) {
+            console.error("Export failed:", error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const chartData = {
         labels: plan.phases.map(p => p.name),
@@ -120,9 +139,26 @@ const RaidPlan = ({ plan, onExportPDF, onShare, onSave, onCreateOverlay, onSubmi
                         <ZoomIn className="w-4 h-4 mr-2" /> Save Plan
                     </button>
 
-                    <button onClick={onExportPDF} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 flex items-center transition-colors">
-                        <Download className="w-4 h-4 mr-2" /> Export
-                    </button>
+                    <div className="flex bg-gray-800 rounded border border-gray-600 overflow-hidden">
+                        <button
+                            onClick={() => handleExport('pdf')}
+                            disabled={isExporting}
+                            className="hover:bg-gray-700 text-white px-3 py-2 flex items-center transition-colors border-r border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Export PDF"
+                        >
+                            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                            PDF
+                        </button>
+                        <button
+                            onClick={() => handleExport('image')}
+                            disabled={isExporting}
+                            className="hover:bg-gray-700 text-white px-3 py-2 flex items-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Export Image"
+                        >
+                            {isExporting ? <Gamepad2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                            JPG
+                        </button>
+                    </div>
 
                     {onCreateOverlay && (
                         <button
