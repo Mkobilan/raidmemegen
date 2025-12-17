@@ -33,7 +33,7 @@ const InteractiveRaidPlan = () => {
         }
         setSaving(true);
         try {
-            // 1. Save to Gallery
+            // 1. Save to Saved Raids (Private Profile)
             const submission = {
                 user_id: currentUser.id,
                 game: plan.game,
@@ -42,11 +42,11 @@ const InteractiveRaidPlan = () => {
                 vibe: plan.vibe,
                 phases: plan.phases,
                 title: plan.title,
-                description: 'Generated in War Room'
+                created_at: new Date().toISOString()
             };
 
             const { error: saveError } = await supabase
-                .from('gallery_posts')
+                .from('saved_raids')
                 .insert([submission]);
 
             if (saveError) throw saveError;
