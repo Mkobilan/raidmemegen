@@ -6,6 +6,7 @@ import Gallery from './components/pages/Gallery';
 import ProfilePage from './components/pages/ProfilePage';
 import Lobby from './components/collab/Lobby';
 import LiveRoom from './components/collab/LiveRoom';
+import RaidOverlay from './components/overlay/RaidOverlay';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/lobby" element={<Lobby />} />
           <Route path="/room/:roomId" element={<LiveRoom />} />
+          <Route path="/overlay" element={<RaidOverlay />} />
         </Routes>
       </Router>
     </AuthProvider>

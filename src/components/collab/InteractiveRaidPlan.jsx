@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown, Download, Image as ImageIcon, FileText, Gamepad2 } from 'lucide-react';
+import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown, Download, Image as ImageIcon, FileText, Gamepad2, Monitor } from 'lucide-react';
 import Card from '../ui/Card';
 import { supabase } from '../../supabaseClient';
 import { useRealtimeRoom } from '../../hooks/useRealtimeRoom';
@@ -9,6 +9,7 @@ import { useRaidGen } from '../../hooks/useRaidGen';
 import RaidExportTemplate from '../raid/RaidExportTemplate';
 import raidsData from '../../data/raids.json';
 import localMemes from '../../data/memes.json';
+import OverlaySetupModal from '../overlay/OverlaySetupModal';
 
 const InteractiveRaidPlan = () => {
     const { roomState: plan, updatePlan, participants, currentUser } = useRealtimeRoom();
@@ -18,6 +19,7 @@ const InteractiveRaidPlan = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null); // { phaseIdx, role }
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [showOverlayModal, setShowOverlayModal] = useState(false);
     const exportRef = useRef(null);
 
     // Flatten participants for easy access
@@ -195,6 +197,10 @@ const InteractiveRaidPlan = () => {
         return acc;
     }, {});
 
+    const handleOpenOverlay = () => {
+        setShowOverlayModal(true);
+    };
+
     return (
         <div className="space-y-8 pb-20">
             {/* Hidden Export Template */}
@@ -208,6 +214,15 @@ const InteractiveRaidPlan = () => {
                     <p className="text-gray-400 text-sm font-mono">
                         OPERATION: {plan.game.toUpperCase()} // {plan.raid.toUpperCase()} // MODE: {plan.vibe.toUpperCase()}
                     </p>
+
+                    <button
+                        onClick={handleOpenOverlay}
+                        className="flex items-center gap-2 px-3 py-1 bg-gray-800 border border-gray-600 rounded hover:bg-raid-neon hover:text-black hover:border-raid-neon transition-colors text-xs font-bold uppercase tracking-wider group"
+                        title="Open Streamer Overlay"
+                    >
+                        <Monitor className="w-3 h-3 group-hover:animate-pulse" />
+                        Popout
+                    </button>
 
                     <button
                         onClick={handleSave}
@@ -451,6 +466,12 @@ const InteractiveRaidPlan = () => {
                     </motion.div>
                 ))}
             </div>
+            {/* Overlay Setup Modal */}
+            <OverlaySetupModal
+                isOpen={showOverlayModal}
+                onClose={() => setShowOverlayModal(false)}
+                raidData={plan}
+            />
         </div>
     );
 };
