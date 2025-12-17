@@ -110,8 +110,8 @@ export const AuthProvider = ({ children }) => {
                     is_pro: false,
                     gens_today: 0,
                     last_reset_date: today,
-                    username: currentUser?.email?.split('@')[0] || 'user_' + userId.slice(0, 8),
-                    display_name: currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0],
+                    username: currentUser?.user_metadata?.username || currentUser?.email?.split('@')[0] || 'user_' + userId.slice(0, 8),
+                    display_name: currentUser?.user_metadata?.username || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0],
                     created_at: new Date().toISOString()
                 };
 
@@ -137,13 +137,14 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    const signup = async (email, password, displayName) => {
+    const signup = async (email, password, username) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
-                    full_name: displayName
+                    username: username || '',
+                    full_name: username || '' // Use username as full_name/display_name initially
                 }
             }
         });
@@ -153,15 +154,22 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         console.log('AuthProvider: logout called');
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('AuthProvider: logout error', error);
-            throw error;
+        try {
+            // Attempt Supabase sign out
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                // Log but don't throw, so we can still clear local state
+                console.warn('AuthProvider: logout warning', error.message);
+            }
+        } catch (err) {
+            console.error('AuthProvider: logout exception (ignored)', err);
+        } finally {
+            // Always clear local state
+            console.log('AuthProvider: clearing local session');
+            setUser(null);
+            setPro(false);
+            setGensCount(0);
         }
-        console.log('AuthProvider: logout successful');
-        setUser(null);
-        setPro(false);
-        setGensCount(0);
     };
 
     const incrementGens = async () => {

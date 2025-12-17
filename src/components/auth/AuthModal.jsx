@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import { X, Mail, Lock, User as UserIcon, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useProfile } from '../../hooks/useProfile';
 
 const AuthModal = ({
     isOpen,
@@ -13,11 +14,56 @@ const AuthModal = ({
 }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [displayName, setDisplayName] = useState('');
+    const [username, setUsername] = useState('');
+    const [isChecking, setIsChecking] = useState(false);
+    const [isAvailable, setIsAvailable] = useState(null); // null, true, false
+    const [showPassword, setShowPassword] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { checkUsernameAvailable } = useProfile();
+
+    useEffect(() => {
+        // Reset state when mode changes or modal opens
+        if (isOpen) {
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setUsername('');
+            setIsChecking(false);
+            setIsAvailable(null);
+        }
+    }, [isOpen, isSignup]);
+
+    useEffect(() => {
+        if (!isSignup || !username || username.length < 3) {
+            setIsAvailable(null);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsChecking(true);
+            const available = await checkUsernameAvailable(username);
+            setIsAvailable(available);
+            setIsChecking(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [username, isSignup]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ email, password, displayName });
+        if (isSignup && password !== confirmPassword) {
+            // You need to handle error display logic here. 
+            // Since error prop is passed from parent, we might need a local error state or pass it up. 
+            // Looking at existing code, `error` is a prop. 
+            // We'll use a simple alert for mismatch for now or better, use the onSubmit to trigger an error state in parent if possible, but parent handles API errors.
+            // Actually, let's use a browser alert or see if we can set the error via parent callback if supported.
+            // The parent `handleAuthSubmit` sets `setAuthError(error.message)`.
+            // We can simulate an error dispatch or just alert.
+            alert("Passwords do not match!");
+            return;
+        }
+        onSubmit({ email, password, username });
     };
 
     if (!isOpen) return null;
@@ -64,12 +110,33 @@ const AuthModal = ({
                                 <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                                 <input
                                     type="text"
-                                    placeholder="Callsign (Display Name)"
-                                    value={displayName}
-                                    onChange={(e) => setDisplayName(e.target.value)}
-                                    className="w-full bg-gray-800 border border-gray-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-raid-neon focus:ring-1 focus:ring-raid-neon transition-colors"
+                                    placeholder="Username"
+                                    value={username}
+                                    onChange={(e) => {
+                                        // Allow only alphanumeric and underscores
+                                        const clean = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+                                        setUsername(clean);
+                                    }}
+                                    className={`w-full bg-gray-800 border text-white pl-10 pr-10 py-3 rounded-lg focus:outline-none transition-colors ${username.length > 0
+                                        ? isAvailable
+                                            ? 'border-green-500 focus:border-green-500 focus:ring-1 focus:ring-green-500'
+                                            : isAvailable === false
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                                                : 'border-gray-700 focus:border-raid-neon focus:ring-1 focus:ring-raid-neon'
+                                        : 'border-gray-700 focus:border-raid-neon focus:ring-1 focus:ring-raid-neon'
+                                        }`}
                                     required
+                                    minLength={3}
                                 />
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                    {isChecking ? (
+                                        <div className="animate-spin h-4 w-4 border-2 border-gray-500 border-t-white rounded-full"></div>
+                                    ) : username.length >= 3 && isAvailable === true ? (
+                                        <div className="text-green-500 font-bold text-xs">OK</div>
+                                    ) : username.length >= 3 && isAvailable === false ? (
+                                        <div className="text-red-500 font-bold text-xs">TAKEN</div>
+                                    ) : null}
+                                </div>
                             </div>
                         )}
 
@@ -88,14 +155,45 @@ const AuthModal = ({
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-gray-800 border border-gray-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-raid-neon focus:ring-1 focus:ring-raid-neon transition-colors"
+                                className="w-full bg-gray-800 border border-gray-700 text-white pl-10 pr-12 py-3 rounded-lg focus:outline-none focus:border-raid-neon focus:ring-1 focus:ring-raid-neon transition-colors"
                                 required
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
+
+                        {isSignup && (
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    placeholder="Confirm Password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className={`w-full bg-gray-800 border text-white pl-10 pr-12 py-3 rounded-lg focus:outline-none transition-colors ${confirmPassword && confirmPassword !== password
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500'
+                                            : 'border-gray-700 focus:border-raid-neon focus:ring-1 focus:ring-raid-neon'
+                                        }`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                        )}
 
                         {error && (
                             <motion.p
@@ -107,10 +205,14 @@ const AuthModal = ({
                             </motion.p>
                         )}
 
+                        {isSignup && username.length >= 3 && isAvailable === false && (
+                            <p className="text-red-500 text-xs text-center">Username is already taken.</p>
+                        )}
+
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            disabled={authLoading}
+                            disabled={authLoading || (isSignup && (!username || !isAvailable))}
                             type="submit"
                             className="w-full bg-raid-neon text-gray-900 font-bold py-3 rounded-lg shadow-lg shadow-raid-neon/20 hover:shadow-raid-neon/40 transition-all font-gamer uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
                         >

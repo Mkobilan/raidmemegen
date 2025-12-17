@@ -230,6 +230,30 @@ export const useProfile = (currentUser = null) => {
         }
     };
 
+    // Search users by username
+    const searchUsers = async (query) => {
+        if (!query || query.length < 2) return [];
+
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('username, display_name, avatar_url')
+                .ilike('username', `%${query}%`)
+                .limit(5);
+
+            if (error) throw error;
+
+            return data.map(profile => ({
+                username: profile.username,
+                displayName: profile.display_name,
+                avatarUrl: profile.avatar_url
+            }));
+        } catch (err) {
+            console.error('Error searching users:', err);
+            return [];
+        }
+    };
+
     return {
         profile,
         loading,
@@ -239,6 +263,7 @@ export const useProfile = (currentUser = null) => {
         checkUsernameAvailable,
         uploadAvatar,
         updateProfile,
-        getUserRaids
+        getUserRaids,
+        searchUsers
     };
 };

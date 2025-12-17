@@ -145,11 +145,12 @@ function Home() {
     };
 
     // --- AUTH ---
-    const handleAuthSubmit = async ({ email, password, displayName }) => {
+    const handleAuthSubmit = async ({ email, password, username }) => {
         setAuthError('');
         try {
             if (isSignup) {
-                await signup(email, password, displayName);
+                await signup(email, password, username);
+                alert("Account created! Please confirm your email to proceed.");
             } else {
                 await login(email, password);
             }
