@@ -9,6 +9,9 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const hideSearchPaths = ['/', '/war-room', '/gallery'];
+    const showSearch = user || !hideSearchPaths.includes(location.pathname);
+
     return (
         <nav className="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +36,7 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
 
                     {/* CENTER SECTION: Search Bar */}
                     <div className="flex-1 max-w-sm mx-4 hidden md:block">
-                        {(!(location.pathname === '/' && !user)) && <UserSearch />}
+                        {showSearch && <UserSearch />}
                     </div>
 
                     {/* RIGHT SECTION: User Profile & Actions */}
@@ -88,7 +91,7 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
             </div>
 
             {/* Mobile Search Bar (Below header on small screens) */}
-            {(!(location.pathname === '/' && !user)) && (
+            {showSearch && (
                 <div className="md:hidden px-4 pb-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-md">
                     <UserSearch />
                 </div>
