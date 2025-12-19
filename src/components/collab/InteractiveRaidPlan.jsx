@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown, Download, Image as ImageIcon, FileText, Gamepad2, Monitor, MessageSquare } from 'lucide-react';
 import Card from '../ui/Card';
@@ -22,7 +22,11 @@ const InteractiveRaidPlan = () => {
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showOverlayModal, setShowOverlayModal] = useState(false);
     const [showDiscordModal, setShowDiscordModal] = useState(false);
+    const [showGame, setShowGame] = useState(false);
     const exportRef = useRef(null);
+
+    // Dynamic import to save bundle size
+    const GameContainer = lazy(() => import('../game/GameContainer'));
 
     // Flatten participants for easy access
     const allUsers = Object.values(participants).flat();
@@ -235,6 +239,15 @@ const InteractiveRaidPlan = () => {
                             <path d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,66.7833272 -2.93192017,115.167012 1.38605819,162.969337 C23.4933973,179.8108 45.3094099,189.989295 66.7093319,196.53922 C71.947543,189.378906 76.6664809,181.769493 80.7018805,173.74204 C73.0531522,170.817346 65.7329241,167.311756 58.7441011,163.268713 C60.5901308,161.90564 62.3686364,160.485147 64.0768393,158.99587 C106.635859,178.705822 149.626573,178.705822 191.713917,158.99587 C193.42212,160.485147 195.200626,161.90564 197.067307,163.268713 C190.057833,167.311756 182.737605,170.817346 175.088877,173.74204 C179.145679,181.769493 183.843965,189.378906 189.082176,196.53922 C210.482098,189.989295 232.298111,179.8108 254.40545,162.969337 C260.027699,111.41164 248.831835,66.7833272 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z"></path>
                         </svg>
                         Share
+                    </button>
+
+                    <button
+                        onClick={() => setShowGame(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-md text-white transition-all hover:scale-105 shadow-lg shadow-purple-500/20 text-sm font-bold uppercase tracking-wider group"
+                        title="Play Generated Level"
+                    >
+                        <Gamepad2 className="w-4 h-4" />
+                        Play Mini-Sim
                     </button>
 
                     <button
@@ -491,6 +504,17 @@ const InteractiveRaidPlan = () => {
                 onClose={() => setShowDiscordModal(false)}
                 raidData={plan}
             />
+
+            {/* Game Modal */}
+            <AnimatePresence>
+                {showGame && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                        <Suspense fallback={<div className="text-white font-gamer animate-pulse">BOOTING SIMULATION...</div>}>
+                            <GameContainer plan={plan} onClose={() => setShowGame(false)} />
+                        </Suspense>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
