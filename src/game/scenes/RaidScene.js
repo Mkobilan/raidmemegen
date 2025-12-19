@@ -58,7 +58,28 @@ export class RaidScene extends Scene {
             fontFamily: 'Inter'
         });
 
-        // --- Exit Button ---
+        // --- Audio Setup ---
+        if (this.cache.audio.exists('music')) {
+            if (!this.sound.get('music')) {
+                this.bgMusic = this.sound.add('music', { volume: 0.3, loop: true });
+                this.bgMusic.play();
+            } else {
+                this.bgMusic = this.sound.get('music');
+            }
+        }
+
+        // --- Exit & Audio Buttons ---
+        const audioBtn = this.add.text(width - 90, 20, this.sound.mute ? '🔇' : '🔊', {
+            fontSize: '24px',
+            backgroundColor: '#111827',
+            padding: { x: 8, y: 5 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        audioBtn.on('pointerdown', () => {
+            this.sound.mute = !this.sound.mute;
+            audioBtn.setText(this.sound.mute ? '🔇' : '🔊');
+        });
+
         const exitBtn = this.add.text(width - 40, 20, 'X', {
             fontSize: '32px',
             fill: '#ff4444',
@@ -210,6 +231,9 @@ export class RaidScene extends Scene {
 
     collectObjective(player, objective) {
         if (objective.label) objective.label.destroy();
+        if (this.cache.audio.exists('collect')) {
+            this.sound.play('collect', { volume: 0.5 });
+        }
         this.particles.explode(20, objective.x, objective.y);
         objective.destroy();
         this.score += 100;
@@ -219,6 +243,9 @@ export class RaidScene extends Scene {
     hitHazard(player, hazard) {
         if (this.isPlayerDead) return;
         this.isPlayerDead = true;
+        if (this.cache.audio.exists('death')) {
+            this.sound.play('death', { volume: 0.6 });
+        }
         this.deathParticles.explode(50, this.player.x, this.player.y);
         this.cameras.main.shake(500, 0.02);
         this.cameras.main.flash(500, 255, 0, 0, 0.5);
