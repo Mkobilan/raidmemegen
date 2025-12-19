@@ -33,11 +33,13 @@ export class RaidScene extends Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        this.physics.resume();
+        // Ensure physics is running
+        this.physics.world.resume();
+        this.physics.world.isPaused = false;
+        this.physics.world.setBounds(0, 0, width, height);
 
         // --- Background ---
         this.add.tileSprite(0, 0, width, height, 'background').setOrigin(0).setAlpha(0.6);
-        // Add a subtle grid on top
         this.add.grid(width / 2, height / 2, width, height, 50, 50, 0x1f2937, 0).setAlpha(0.2);
 
         // --- UI ---
@@ -93,7 +95,9 @@ export class RaidScene extends Scene {
 
         // --- Player ---
         this.player = this.physics.add.sprite(levelData.entities.playerStart.x, levelData.entities.playerStart.y, 'player');
-        this.player.setDisplaySize(40, 40);
+        this.player.setDisplaySize(60, 60);
+        this.player.body.setSize(400, 400);
+        this.player.body.setOffset(312, 312);
         this.player.setCollideWorldBounds(true);
         this.player.setDrag(1000);
         this.speed = 350;
@@ -102,11 +106,10 @@ export class RaidScene extends Scene {
         this.objectives = this.physics.add.group();
         levelData.entities.objectives.forEach(obj => {
             const sprite = this.physics.add.sprite(obj.x, obj.y, 'objective');
-            sprite.setDisplaySize(30, 30);
+            sprite.setDisplaySize(45, 45);
             sprite.body.setImmovable(true);
             this.objectives.add(sprite);
 
-            // Label
             const label = this.add.text(obj.x, obj.y - 35, obj.label, {
                 fontSize: '12px',
                 fill: '#00ff88',
@@ -116,10 +119,10 @@ export class RaidScene extends Scene {
             }).setOrigin(0.5);
             sprite.label = label;
 
-            // Small pulse animation
             this.tweens.add({
                 targets: sprite,
-                scale: 0.07,
+                displayWidth: 55,
+                displayHeight: 55,
                 duration: 800,
                 yoyo: true,
                 repeat: -1,
@@ -131,24 +134,18 @@ export class RaidScene extends Scene {
         this.hazards = this.physics.add.group();
         levelData.entities.hazards.forEach(haz => {
             const sprite = this.physics.add.sprite(haz.x, haz.y, 'enemy');
-            sprite.setDisplaySize(35, 35);
+            this.hazards.add(sprite);
+
+            sprite.setDisplaySize(53, 53);
+            sprite.body.setSize(400, 400);
+            sprite.body.setOffset(312, 312);
+
+            // Re-apply velocity after group addition
             sprite.body.setVelocity(haz.vx, haz.vy);
             sprite.body.setBounce(1, 1);
             sprite.body.setCollideWorldBounds(true);
-            this.hazards.add(sprite);
-
-            // Label
-            const label = this.add.text(haz.x, haz.y - 35, haz.label, {
-                fontSize: '10px',
-                fill: '#ef4444',
-                fontFamily: 'Inter',
-                backgroundColor: '#11182788',
-                padding: { x: 4, y: 2 }
-            }).setOrigin(0.5);
-            sprite.label = label;
-
-            // Rotate enemies
-            sprite.rotationSpeed = (Math.random() - 0.5) * 0.1;
+            sprite.body.setAllowGravity(false);
+            sprite.body.setImmovable(false);
         });
 
         // --- Controls ---
@@ -169,42 +166,35 @@ export class RaidScene extends Scene {
         if (this.isGameOver) return;
         if (!this.player || this.isPlayerDead) return;
 
-        // Update Labels and Rotation
+        // Update Labels and Orientation
         this.objectives.getChildren().forEach(obj => {
             if (obj.label) { obj.label.setPosition(obj.x, obj.y - 35); }
         });
         this.hazards.getChildren().forEach(haz => {
-            if (haz.label) { haz.label.setPosition(haz.x, haz.y - 35); }
-            haz.rotation += (haz.rotationSpeed || 0.02);
+            // Face movement direction (Flipped 180 degrees to face forward)
+            if (haz.body && (haz.body.velocity.x !== 0 || haz.body.velocity.y !== 0)) {
+                const angle = Math.atan2(haz.body.velocity.y, haz.body.velocity.x);
+                haz.setRotation(angle - Math.PI / 2);
+            }
         });
 
-        // Update UI
         this.objText.setText(`Objectives Left: ${this.objectives.countActive(true)}`);
 
-        // Check Win Condition
         if (this.objectives.countActive(true) === 0) {
             this.completePhase();
         }
 
         // Movement
         this.player.body.setVelocity(0);
-
         let vx = 0;
         let vy = 0;
 
-        if (this.cursors.left.isDown || this.wasd.left.isDown) {
-            vx = -this.speed;
-        } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-            vx = this.speed;
-        }
+        if (this.cursors.left.isDown || this.wasd.left.isDown) vx = -this.speed;
+        else if (this.cursors.right.isDown || this.wasd.right.isDown) vx = this.speed;
 
-        if (this.cursors.up.isDown || this.wasd.up.isDown) {
-            vy = -this.speed;
-        } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-            vy = this.speed;
-        }
+        if (this.cursors.up.isDown || this.wasd.up.isDown) vy = -this.speed;
+        else if (this.cursors.down.isDown || this.wasd.down.isDown) vy = this.speed;
 
-        // Normalize diagonal speed
         if (vx !== 0 && vy !== 0) {
             vx *= 0.7071;
             vy *= 0.7071;
@@ -212,41 +202,29 @@ export class RaidScene extends Scene {
 
         this.player.body.setVelocity(vx, vy);
 
-        // Player rotation based on movement
         if (vx !== 0 || vy !== 0) {
             this.player.setRotation(Math.atan2(vy, vx) + Math.PI / 2);
-            // Trail particles
             this.particles.emitParticleAt(this.player.x, this.player.y);
         }
     }
 
     collectObjective(player, objective) {
         if (objective.label) objective.label.destroy();
-
-        // Blast particles
         this.particles.explode(20, objective.x, objective.y);
-
         objective.destroy();
         this.score += 100;
-
         this.cameras.main.flash(200, 0, 255, 136, 0.2);
     }
 
     hitHazard(player, hazard) {
         if (this.isPlayerDead) return;
-
         this.isPlayerDead = true;
-
-        // Death effect
         this.deathParticles.explode(50, this.player.x, this.player.y);
         this.cameras.main.shake(500, 0.02);
         this.cameras.main.flash(500, 255, 0, 0, 0.5);
-
-        // Visual Death
         this.player.setVisible(false);
         this.player.body.enable = false;
 
-        // Show Text
         const text = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'WASTED', {
             fontSize: '84px',
             fill: '#ff0000',
@@ -264,7 +242,6 @@ export class RaidScene extends Scene {
             ease: 'Back.easeOut'
         });
 
-        // Respawn Sequence
         this.time.delayedCall(2000, () => {
             this.tweens.add({
                 targets: text,
@@ -281,26 +258,27 @@ export class RaidScene extends Scene {
 
     respawnPlayer() {
         this.isPlayerDead = false;
-        this.player.body.enable = true;
-        this.player.setVisible(true);
-        this.player.setPosition(this.cameras.main.width / 2, this.cameras.main.height / 2);
-        this.player.clearTint();
-        this.player.setAlpha(1);
+        const phase = this.plan.phases[this.currentPhaseIndex];
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+        const levelData = generateLevelFromPhase(phase, width, height);
 
-        // Brief Invulnerability (flashing)
+        this.player.setPosition(levelData.entities.playerStart.x, levelData.entities.playerStart.y);
+        this.player.setVisible(true);
+        this.player.body.enable = true;
+        this.player.setAlpha(0);
+        this.player.clearTint();
+
         this.tweens.add({
             targets: this.player,
-            alpha: 0.2,
-            duration: 100,
-            yoyo: true,
-            repeat: 10
+            alpha: 1,
+            duration: 500
         });
     }
 
     completePhase() {
         if (this.isPhaseCompleting) return;
         this.isPhaseCompleting = true;
-
         this.physics.pause();
         this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'PHASE CLEARED', {
             fontSize: '64px',

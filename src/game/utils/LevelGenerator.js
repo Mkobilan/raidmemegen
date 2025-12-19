@@ -31,8 +31,8 @@ export const generateLevelFromPhase = (phase, width, height) => {
         });
     }
 
-    // 3. Generate Hazards (5-8 per level)
-    const hazardCount = 5 + Math.floor(Math.random() * 5);
+    // 3. Generate Hazards (Reduced by 20%: 4-6 per level)
+    const hazardCount = 4 + Math.floor(Math.random() * 3);
     let attempts = 0;
     while (entities.hazards.length < hazardCount && attempts < 50) {
         attempts++;
@@ -43,8 +43,8 @@ export const generateLevelFromPhase = (phase, width, height) => {
         const dist = Math.sqrt(Math.pow(x - (width / 2), 2) + Math.pow(y - (height / 2), 2));
         if (dist < 150) continue; // 150px Safe Zone
 
-        // Ensure min speed
-        const speed = 100 + Math.random() * 150;
+        // Ensure moderate speed
+        const speed = 100 + Math.random() * 100;
         const angle = Math.random() * Math.PI * 2;
 
         entities.hazards.push({

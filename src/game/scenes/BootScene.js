@@ -6,9 +6,9 @@ export class BootScene extends Scene {
     }
 
     preload() {
-        this.load.image('player', '/images/game/player.jpg');
-        this.load.image('enemy', '/images/game/enemy.jpg');
-        this.load.image('objective', '/images/game/objective.jpg');
+        this.load.image('player', '/images/game/player.png');
+        this.load.image('enemy', '/images/game/enemy.png');
+        this.load.image('objective', '/images/game/objective.png');
         this.load.image('background', '/images/game/background.jpg');
 
         // Load some basic particles
