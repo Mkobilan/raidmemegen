@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
+# Canonical Sitemap
 Sitemap: https://raidmemegen.vercel.app/sitemap.xml
