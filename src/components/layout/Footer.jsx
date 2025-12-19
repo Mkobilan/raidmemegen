@@ -15,14 +15,6 @@ const Footer = () => {
                         <p className="mt-1">Built for gamers who wipe together.</p>
                     </div>
 
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <a href="#" className="text-gray-400 hover:text-raid-neon transition-colors">
-                            <Github className="h-5 w-5" />
-                        </a>
-                        <a href="#" className="text-gray-400 hover:text-raid-neon transition-colors">
-                            <Twitter className="h-5 w-5" />
-                        </a>
-                    </div>
                 </div>
             </div>
         </footer>

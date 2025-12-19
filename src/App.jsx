@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
-import Home from './components/pages/Home';
+import LandingPage from './components/pages/LandingPage';
+import WarRoom from './components/pages/Home';
 import SharedRaid from './components/pages/SharedRaid';
 import Gallery from './components/pages/Gallery';
 import ProfilePage from './components/pages/ProfilePage';
@@ -13,7 +14,8 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/war-room" element={<WarRoom />} />
           <Route path="/share" element={<SharedRaid />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/profile/:username" element={<ProfilePage />} />

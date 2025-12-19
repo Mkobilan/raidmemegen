@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* tailwindcss v4 configuration */
 @theme {
   --color-raid-neon: #00ff88;
   --color-wipe-red: #ff4444;
@@ -22,6 +23,20 @@
       box-shadow: 0 0 20px #00ff88, 0 0 10px #00ff88;
     }
   }
+}
+
+/* Custom Utilities */
+.glass {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 /* Base Styles */

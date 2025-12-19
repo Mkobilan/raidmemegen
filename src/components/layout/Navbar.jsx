@@ -33,7 +33,7 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
 
                     {/* CENTER SECTION: Search Bar */}
                     <div className="flex-1 max-w-sm mx-4 hidden md:block">
-                        <UserSearch />
+                        {(!(location.pathname === '/' && !user)) && <UserSearch />}
                     </div>
 
                     {/* RIGHT SECTION: User Profile & Actions */}
@@ -88,9 +88,11 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
             </div>
 
             {/* Mobile Search Bar (Below header on small screens) */}
-            <div className="md:hidden px-4 pb-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-md">
-                <UserSearch />
-            </div>
+            {(!(location.pathname === '/' && !user)) && (
+                <div className="md:hidden px-4 pb-4 border-b border-gray-800 bg-gray-900/95 backdrop-blur-md">
+                    <UserSearch />
+                </div>
+            )}
 
             <AnimatePresence>
                 {isOpen && (
