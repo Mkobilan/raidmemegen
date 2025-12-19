@@ -17,6 +17,7 @@ import BentoCard from '../landing/BentoCard';
 import Navbar from '../layout/Navbar';
 import Footer from '../layout/Footer';
 import { useAuth } from '../../hooks/useAuth';
+import warroomPreview from '../../assets/warroom_preview.png';
 
 const LandingPage = () => {
     const { user, pro, logout } = useAuth();
@@ -112,7 +113,7 @@ const LandingPage = () => {
                             </div>
                             <div className="aspect-video relative overflow-hidden bg-gray-900 flex items-center justify-center">
                                 <img
-                                    src="/src/assets/warroom_preview.png"
+                                    src={warroomPreview}
                                     alt="Raid War Room Mockup"
                                     className="w-full h-full object-contain transition-opacity duration-500"
                                 />
