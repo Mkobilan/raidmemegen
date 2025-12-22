@@ -23,6 +23,8 @@ function Home() {
         user,
         pro,
         gensCount,
+        isTrialActive,
+        trialDaysLeft,
         authLoading,
         login,
         signup,
@@ -53,7 +55,7 @@ function Home() {
         exportPDF,
         exportImage,
         setPlan
-    } = useRaidGen(user, pro, gensCount, () => setShowUpgradeModal(true));
+    } = useRaidGen(user, pro, isTrialActive, () => setShowUpgradeModal(true));
 
     // Gallery Hook
     const { submitToGallery } = useGallery(user);
@@ -251,6 +253,8 @@ function Home() {
                         <RaidGenerator
                             user={user}
                             isPro={pro}
+                            isTrialActive={isTrialActive}
+                            trialDaysLeft={trialDaysLeft}
                             gensCount={gensCount}
                             loading={genLoading}
                             onGenerate={(params) => generateRaid({ ...params, incrementGens })}

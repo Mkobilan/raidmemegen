@@ -9,6 +9,8 @@ const RaidGenerator = ({
     loading,
     gensCount,
     isPro,
+    isTrialActive,
+    trialDaysLeft,
     onShowAuth
 }) => {
     const [game, setGame] = useState('');
@@ -118,9 +120,15 @@ const RaidGenerator = ({
 
                 {!isPro && user && (
                     <div className="mt-3 flex justify-center">
-                        <span className={`text-sm font-medium px-3 py-1 rounded-full border ${gensCount >= 3 ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-gray-600 text-gray-400'}`}>
-                            Daily Gens: {gensCount} / 3
-                        </span>
+                        {isTrialActive ? (
+                            <span className="text-sm font-medium px-3 py-1 rounded-full border border-raid-neon/50 text-raid-neon bg-raid-neon/5">
+                                FREE TRIAL: {trialDaysLeft} DAYS LEFT
+                            </span>
+                        ) : (
+                            <span className="text-sm font-medium px-3 py-1 rounded-full border border-wipe-red text-wipe-red bg-wipe-red/10 animate-pulse">
+                                TRIAL EXPIRED - UPGRADE REQUIRED
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

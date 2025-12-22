@@ -7,7 +7,7 @@ import raidsData from '../data/raids.json';
 
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
-export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
+export const useRaidGen = (user, pro, isTrialActive, onLimitReached) => {
     const [loading, setLoading] = useState(false);
     const [plan, setPlan] = useState(null);
 
@@ -37,7 +37,7 @@ export const useRaidGen = (user, pro, gensCount, onLimitReached) => {
         if (!user) {
             throw new Error('User not logged in');
         }
-        if (!pro && gensCount >= 3) {
+        if (!pro && !isTrialActive) {
             onLimitReached();
             return;
         }

@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }) => {
     const [userProfile, setUserProfile] = useState(null); // Full profile data (avatar, username)
     const [authLoading, setAuthLoading] = useState(true);
     const [pro, setPro] = useState(false);
+    const [isTrialActive, setIsTrialActive] = useState(true);
+    const [trialDaysLeft, setTrialDaysLeft] = useState(14);
     const [gensCount, setGensCount] = useState(0);
 
     const getUTCToday = () => new Date().toISOString().split('T')[0];
@@ -104,6 +106,16 @@ export const AuthProvider = ({ children }) => {
                 setPro(data.is_pro || false);
                 setGensCount(todayGens);
                 setUserProfile(data); // Expose full profile
+
+                // Calculate trial status
+                const createdAt = new Date(data.created_at);
+                const now = new Date();
+                const diffTime = Math.abs(now - createdAt);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const daysLeft = Math.max(0, 14 - diffDays);
+
+                setIsTrialActive(diffDays <= 14);
+                setTrialDaysLeft(daysLeft);
             } else {
                 console.log('fetchUserData: creating new profile');
                 // Initialize profile if missing
@@ -121,6 +133,8 @@ export const AuthProvider = ({ children }) => {
                 if (insertError) console.error('fetchUserData: insert error', insertError);
                 setPro(false);
                 setGensCount(0);
+                setIsTrialActive(true);
+                setTrialDaysLeft(14);
             }
         } catch (error) {
             console.error('Error in fetchUserData:', error);
@@ -171,6 +185,9 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setPro(false);
             setGensCount(0);
+            setIsTrialActive(true);
+            setTrialDaysLeft(14);
+            setAuthLoading(false);
         }
     };
 
@@ -192,10 +209,10 @@ export const AuthProvider = ({ children }) => {
             currentGens = 0;
         }
 
-        // Limit check only for non-pro
-        if (!pro && currentGens >= 3) {
-            throw new Error('Daily limit reached');
-        }
+        // REMOVED: Limit check only for non-pro
+        // if (!pro && currentGens >= 3) {
+        //     throw new Error('Daily limit reached');
+        // }
 
         const currentStats = profile.raid_stats || {
             totalGenerated: 0,
@@ -239,7 +256,9 @@ export const AuthProvider = ({ children }) => {
         incrementGens,
 
         refreshUser,
-        userProfile // New field
+        userProfile,
+        isTrialActive,
+        trialDaysLeft
     };
 
     return (

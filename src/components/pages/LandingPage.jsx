@@ -176,10 +176,10 @@ const LandingPage = () => {
                             <Rocket className="h-16 w-16 text-raid-neon mx-auto mb-8 animate-bounce" />
                             <h2 className="text-4xl md:text-6xl font-gamer font-bold mb-6">READY TO LEVEL UP?</h2>
                             <p className="text-gray-400 text-xl mb-12 max-w-2xl mx-auto">
-                                Join the pro tier for just $5/month. Get unlimited generations, premium export templates, and early access to new game integrations.
+                                Join the pro tier for just $5/month. Get a <strong className="text-raid-neon">14-day free trial</strong>, unlimited generations, premium export templates, and early access to new game integrations.
                             </p>
                             <Link to="/war-room" className="px-12 py-5 bg-white text-black font-gamer font-bold rounded-full hover:scale-105 transition-transform inline-block shadow-2xl shadow-raid-neon/20">
-                                GET STARTED FOR FREE
+                                START YOUR 14-DAY TRIAL
                             </Link>
                         </div>
                     </div>

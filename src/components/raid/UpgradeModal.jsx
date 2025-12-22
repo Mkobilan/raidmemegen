@@ -41,7 +41,7 @@ const UpgradeModal = ({ isOpen, onClose, onUpgrade }) => {
                             LEVEL UP YOUR CHAOS
                         </h2>
                         <p className="text-gray-400">
-                            You've hit the free tier limit. Unlock <span className="text-yellow-500 font-bold">Unlimited Generations</span> and support the raids!
+                            Your <span className="text-yellow-500 font-bold">14-Day Free Trial</span> has expired. Unlock <span className="text-raid-neon font-bold">Unlimited Access</span> to all features and support the raids!
                         </p>
                     </div>
 
@@ -71,7 +71,7 @@ const UpgradeModal = ({ isOpen, onClose, onUpgrade }) => {
                             onClick={onClose}
                             className="w-full text-gray-500 hover:text-gray-300 py-2 text-sm font-medium transition-colors"
                         >
-                            No thanks, I'll wait till tomorrow
+                            Maybe later
                         </button>
                     </div>
                 </motion.div>
