@@ -46,10 +46,9 @@ export default async function handler(req, res) {
     try {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
-            const userId = session.metadata.user_id || session.metadata.firebase_uid; // fallback for legacy
+            const userId = session.metadata.user_id;
 
             if (userId) {
-                // Update user profile
                 const { error } = await supabase
                     .from('profiles')
                     .update({
@@ -60,29 +59,44 @@ export default async function handler(req, res) {
                     .eq('id', userId);
 
                 if (error) throw error;
-                console.log(`User ${userId} upgraded to Pro.`);
+                console.log(`Checkout completed: User ${userId} upgraded to Pro.`);
             }
-        } else if (event.type === 'customer.subscription.deleted') {
+        } else if (event.type === 'customer.subscription.updated') {
             const subscription = event.data.object;
-            // Find user by subscription ID
-            // Note: We need to search by stripe_sub_id. 
-            // If column doesn't exist in schema (I didn't add it explicitly to profiles in schema.sql), we need to add it.
-            // I will update schema.sql or just use jsonb metadata if prefered? 
-            // The schema had 'is_pro'.
-            // I should stick to 'is_pro'. Searching might be hard if not indexed, but fine for now.
+            const isCanceled = subscription.status === 'canceled' || subscription.status === 'unpaid';
 
-            const { data: users } = await supabase
+            // Sync status based on Stripe's source of truth
+            const { error } = await supabase
                 .from('profiles')
-                .select('id')
+                .update({
+                    is_pro: !isCanceled,
+                    updated_at: new Date().toISOString()
+                })
                 .eq('stripe_sub_id', subscription.id);
 
-            if (users && users.length > 0) {
-                for (const u of users) {
-                    await supabase
-                        .from('profiles')
-                        .update({ is_pro: false })
-                        .eq('id', u.id);
-                }
+            if (error) console.error('Error updating subscription status:', error);
+        } else if (event.type === 'customer.subscription.deleted') {
+            const subscription = event.data.object;
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    is_pro: false,
+                    stripe_sub_id: null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('stripe_sub_id', subscription.id);
+
+            if (error) console.error('Error deleting subscription status:', error);
+        } else if (event.type === 'invoice.payment_failed') {
+            const invoice = event.data.object;
+            // Revoke access if payment fails after trial/renewal
+            if (invoice.subscription) {
+                await supabase
+                    .from('profiles')
+                    .update({ is_pro: false })
+                    .eq('stripe_sub_id', invoice.subscription);
+                console.log(`Payment failed for subscription ${invoice.subscription}. Access revoked.`);
             }
         }
 
