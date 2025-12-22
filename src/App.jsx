@@ -8,6 +8,7 @@ import ProfilePage from './components/pages/ProfilePage';
 import Lobby from './components/collab/Lobby';
 import LiveRoom from './components/collab/LiveRoom';
 import RaidOverlay from './components/overlay/RaidOverlay';
+import Settings from './components/pages/Settings';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/lobby" element={<Lobby />} />
           <Route path="/room/:roomId" element={<LiveRoom />} />
           <Route path="/overlay" element={<RaidOverlay />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Router>
     </AuthProvider>

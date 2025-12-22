@@ -1,4 +1,4 @@
-import { Menu, X, User, LogOut, Zap, Image, Swords } from 'lucide-react';
+import { Menu, X, User, LogOut, Zap, Image, Swords, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -114,6 +114,13 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                             </button>
 
                             <button
+                                onClick={() => { navigate('/war-room'); setIsOpen(false); }}
+                                className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
+                            >
+                                <Zap className="h-4 w-4 mr-2 text-raid-neon" /> Raid Gen
+                            </button>
+
+                            <button
                                 onClick={() => { navigate('/lobby'); setIsOpen(false); }}
                                 className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
                             >
@@ -132,6 +139,13 @@ const Navbar = ({ user, isPro, onLoginClick, onLogoutClick, onSavedClick }) => {
                                         className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
                                     >
                                         <Zap className="h-4 w-4 mr-2 text-raid-neon" /> Saved Raids
+                                    </button>
+
+                                    <button
+                                        onClick={() => { navigate('/settings'); setIsOpen(false); }}
+                                        className="text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center transition-colors"
+                                    >
+                                        <Settings className="h-4 w-4 mr-2 text-raid-neon" /> Settings
                                     </button>
 
                                     <button
