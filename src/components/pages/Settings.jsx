@@ -79,18 +79,24 @@ const Settings = () => {
                 })
                 .eq('id', user.id);
 
-            if (error) throw error;
-            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setMessage({ type: 'success', text: 'All settings saved successfully!' });
         } catch (error) {
             setMessage({ type: 'error', text: error.message });
         } finally {
             setLoading(false);
-            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            setTimeout(() => setMessage({ type: '', text: '' }), 5000);
         }
     };
 
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
+        setMessage({ type: '', text: '' }); // Clear any old messages
+
+        if (!passwords.newPassword) {
+            setMessage({ type: 'error', text: 'Please enter a new password' });
+            return;
+        }
+
         if (passwords.newPassword !== passwords.confirmPassword) {
             setMessage({ type: 'error', text: 'Passwords do not match' });
             return;
@@ -107,7 +113,7 @@ const Settings = () => {
             setMessage({ type: 'error', text: error.message });
         } finally {
             setLoading(false);
-            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            setTimeout(() => setMessage({ type: '', text: '' }), 5000);
         }
     };
 
@@ -255,86 +261,88 @@ const Settings = () => {
                             </div>
                         )}
 
-                        <Section title="Account Profile" icon={User}>
-                            <form onSubmit={handleUpdateProfile} className="space-y-4">
+                        <form onSubmit={handleUpdateProfile} className="space-y-6">
+                            <Section title="Account Profile" icon={User}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">Display Name</label>
+                                        <div className="relative">
+                                            <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <input
+                                                type="text"
+                                                value={profile.username}
+                                                onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                                                className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-raid-neon transition-colors"
+                                                placeholder="Username"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-800">
+                                        <div>
+                                            <div className="font-medium text-white flex items-center gap-2">
+                                                <Globe className="h-4 w-4 text-raid-neon" />
+                                                Public Profile
+                                            </div>
+                                            <p className="text-xs text-gray-500">Allow others to see your saved raids and profile stats</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setProfile({ ...profile, is_public: !profile.is_public })}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.is_public ? 'bg-raid-neon' : 'bg-gray-700'
+                                                }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profile.is_public ? 'translate-x-6' : 'translate-x-1'
+                                                }`} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </Section>
+
+                            <Section title="Preferences" icon={Palette}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">Default Meme Style</label>
+                                        <select
+                                            value={profile.default_meme_style}
+                                            onChange={(e) => setProfile({ ...profile, default_meme_style: e.target.value })}
+                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-raid-neon transition-colors"
+                                        >
+                                            <option value="Matrix">Matrix (Neon Green)</option>
+                                            <option value="Classic">Classic (White/Black)</option>
+                                            <option value="Retro">Retro (80s Neon)</option>
+                                            <option value="Modern">Modern (Dark/Minimal)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </Section>
+
+                            <Section title="Integrations" icon={Bell}>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">Display Name</label>
+                                    <label className="block text-sm font-medium text-gray-400 mb-1">Discord Webhook</label>
                                     <div className="relative">
-                                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                         <input
                                             type="text"
-                                            value={profile.username}
-                                            onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                                            value={profile.discord_webhook_url}
+                                            onChange={(e) => setProfile({ ...profile, discord_webhook_url: e.target.value })}
                                             className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-raid-neon transition-colors"
-                                            placeholder="Username"
+                                            placeholder="https://discord.com/api/webhooks/..."
                                         />
                                     </div>
+                                    <p className="mt-2 text-xs text-gray-500">Automatically post your generated raids to this Discord channel</p>
                                 </div>
+                            </Section>
 
-                                <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-800">
-                                    <div>
-                                        <div className="font-medium text-white flex items-center gap-2">
-                                            <Globe className="h-4 w-4 text-raid-neon" />
-                                            Public Profile
-                                        </div>
-                                        <p className="text-xs text-gray-500">Allow others to see your saved raids and profile stats</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setProfile({ ...profile, is_public: !profile.is_public })}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.is_public ? 'bg-raid-neon' : 'bg-gray-700'
-                                            }`}
-                                    >
-                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${profile.is_public ? 'translate-x-6' : 'translate-x-1'
-                                            }`} />
-                                    </button>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-raid-neon text-black font-gamer font-bold py-2 rounded-lg hover:bg-white transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <Save className="h-4 w-4" />
-                                    {loading ? 'Saving...' : 'Save Profile'}
-                                </button>
-                            </form>
-                        </Section>
-
-                        <Section title="Preferences" icon={Palette}>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">Default Meme Style</label>
-                                    <select
-                                        value={profile.default_meme_style}
-                                        onChange={(e) => setProfile({ ...profile, default_meme_style: e.target.value })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-raid-neon transition-colors"
-                                    >
-                                        <option value="Matrix">Matrix (Neon Green)</option>
-                                        <option value="Classic">Classic (White/Black)</option>
-                                        <option value="Retro">Retro (80s Neon)</option>
-                                        <option value="Modern">Modern (Dark/Minimal)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </Section>
-
-                        <Section title="Integrations" icon={Bell}>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-1">Discord Webhook</label>
-                                <div className="relative">
-                                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                    <input
-                                        type="text"
-                                        value={profile.discord_webhook_url}
-                                        onChange={(e) => setProfile({ ...profile, discord_webhook_url: e.target.value })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-raid-neon transition-colors"
-                                        placeholder="https://discord.com/api/webhooks/..."
-                                    />
-                                </div>
-                                <p className="mt-2 text-xs text-gray-500">Automatically post your generated raids to this Discord channel</p>
-                            </div>
-                        </Section>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-raid-neon text-black font-gamer font-bold py-3 rounded-xl hover:bg-white transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-raid-neon/20"
+                            >
+                                <Save className="h-5 w-5" />
+                                {loading ? 'SAVING CHANGES...' : 'SAVE ALL ACCOUNT UPDATES'}
+                            </button>
+                        </form>
 
                         <Section title="Security" icon={Shield}>
                             <form onSubmit={handleUpdatePassword} className="space-y-4">
