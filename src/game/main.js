@@ -15,6 +15,11 @@ const StartGame = (parentContainerId, raidPlan, onClose) => {
                 gravity: { y: 0 },
                 debug: false
             }
+        },
+        audio: {
+            disableWebAudio: false,
+            noAudio: false,
+            context: null // Use default
         }
     };
 

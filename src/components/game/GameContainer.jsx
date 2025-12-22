@@ -6,11 +6,14 @@ const GameContainer = ({ plan, onClose }) => {
     const gameRef = useRef(null);
     const [isMobile, setIsMobile] = useState(false);
 
+    const [isGameLoading, setIsGameLoading] = useState(true);
+
     useEffect(() => {
         if (gameRef.current) return;
 
         if (gameContainerRef.current && plan) {
             gameRef.current = StartGame(gameContainerRef.current.id, plan, onClose);
+            setIsGameLoading(false);
         }
 
         return () => {
@@ -55,13 +58,23 @@ const GameContainer = ({ plan, onClose }) => {
                 </div>
 
                 {/* Game Container */}
-                <div
-                    id="phaser-game-container"
-                    ref={gameContainerRef}
-                    className="overflow-hidden border-4 rounded-lg shadow-2xl border-slate-700"
-                    style={{ width: '800px', height: '600px', margin: '0 auto' }}
-                >
-                    {/* Phaser injects canvas here */}
+                <div className="relative">
+                    {isGameLoading && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900 rounded-lg">
+                            <div className="text-center">
+                                <div className="w-12 h-12 border-4 border-raid-neon border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p className="text-raid-neon font-gamer animate-pulse">BOOTING SIMULATION...</p>
+                            </div>
+                        </div>
+                    )}
+                    <div
+                        id={`phaser-game-${plan?.id || 'default'}`}
+                        ref={gameContainerRef}
+                        className="overflow-hidden border-4 rounded-lg shadow-2xl border-slate-700"
+                        style={{ width: '800px', height: '600px', margin: '0 auto' }}
+                    >
+                        {/* Phaser injects canvas here */}
+                    </div>
                 </div>
 
                 {/* Controls Hint */}

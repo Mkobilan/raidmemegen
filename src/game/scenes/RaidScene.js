@@ -118,10 +118,17 @@ export class RaidScene extends Scene {
         });
 
         // --- Player ---
-        this.player = this.physics.add.sprite(levelData.entities.playerStart.x, levelData.entities.playerStart.y, 'player');
-        this.player.setDisplaySize(60, 60);
-        this.player.body.setSize(400, 400);
-        this.player.body.setOffset(312, 312);
+        if (this.textures.exists('player')) {
+            this.player = this.physics.add.sprite(levelData.entities.playerStart.x, levelData.entities.playerStart.y, 'player');
+            this.player.setDisplaySize(60, 60);
+            this.player.body.setSize(400, 400);
+            this.player.body.setOffset(312, 312);
+        } else {
+            console.error('Texture "player" missing! Using fallback.');
+            this.player = this.add.rectangle(levelData.entities.playerStart.x, levelData.entities.playerStart.y, 40, 40, 0x00ff88);
+            this.physics.add.existing(this.player);
+        }
+
         this.player.setCollideWorldBounds(true);
         this.player.setDrag(1000);
         this.speed = 350;
@@ -129,8 +136,15 @@ export class RaidScene extends Scene {
         // --- Objectives ---
         this.objectives = this.physics.add.group();
         levelData.entities.objectives.forEach(obj => {
-            const sprite = this.physics.add.sprite(obj.x, obj.y, 'objective');
-            sprite.setDisplaySize(45, 45);
+            let sprite;
+            if (this.textures.exists('objective')) {
+                sprite = this.physics.add.sprite(obj.x, obj.y, 'objective');
+                sprite.setDisplaySize(45, 45);
+            } else {
+                sprite = this.add.rectangle(obj.x, obj.y, 30, 30, 0xffff00);
+                this.physics.add.existing(sprite);
+            }
+
             sprite.body.setImmovable(true);
             this.objectives.add(sprite);
 
@@ -157,12 +171,18 @@ export class RaidScene extends Scene {
         // --- Hazards ---
         this.hazards = this.physics.add.group();
         levelData.entities.hazards.forEach(haz => {
-            const sprite = this.physics.add.sprite(haz.x, haz.y, 'enemy');
-            this.hazards.add(sprite);
+            let sprite;
+            if (this.textures.exists('enemy')) {
+                sprite = this.physics.add.sprite(haz.x, haz.y, 'enemy');
+                sprite.setDisplaySize(53, 53);
+                sprite.body.setSize(400, 400);
+                sprite.body.setOffset(312, 312);
+            } else {
+                sprite = this.add.rectangle(haz.x, haz.y, 40, 40, 0xff4444);
+                this.physics.add.existing(sprite);
+            }
 
-            sprite.setDisplaySize(53, 53);
-            sprite.body.setSize(400, 400);
-            sprite.body.setOffset(312, 312);
+            this.hazards.add(sprite);
 
             // Re-apply velocity after group addition
             sprite.body.setVelocity(haz.vx, haz.vy);
