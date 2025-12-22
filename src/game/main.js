@@ -12,32 +12,22 @@ const StartGame = (parentContainerId, raidPlan, onClose) => {
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: 0 }, // Top down logic, no gravity
+                gravity: { y: 0 },
                 debug: false
             }
-        },
-        scene: [BootScene, RaidScene]
+        }
     };
 
     const game = new Phaser.Game(config);
 
-    // Pass data to the scene immediately
-    game.scene.start('BootScene');
-
-    // We can't easily pass data to BootScene via start here because the Scene Manager isn't ready immediately sync.
-    // Instead we attach it to the registry or use a delayed start.
-    // Better yet, let BootScene start RaidScene, but how do we get the plan in?
-    // We'll attach it to the game instance safely.
-    game.raidPlan = raidPlan;
-    game.onExternalClose = onClose;
-
-    // Hacky but effective: Override BootScene start to pass data
-    game.events.on('ready', () => {
-        // game.scene.start('RaidScene', { plan: raidPlan });
-        // Actually BootScene runs first.
+    // Pass data directly to the first scene
+    game.scene.add('BootScene', BootScene, true, {
+        plan: raidPlan,
+        onClose: onClose
     });
 
-    // Let's modify BootScene to look for game.raidPlan
+    // Add RaidScene but don't start it yet
+    game.scene.add('RaidScene', RaidScene, false);
 
     return game;
 }

@@ -22,7 +22,10 @@ export class RaidScene extends Scene {
     }
 
     create() {
-        if (!this.plan || !this.plan.phases) return;
+        if (!this.plan || !this.plan.phases) {
+            console.warn('RaidScene: Missing plan data!', this.plan);
+            return;
+        }
 
         const phase = this.plan.phases[this.currentPhaseIndex];
         if (!phase) {

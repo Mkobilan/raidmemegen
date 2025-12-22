@@ -31,7 +31,7 @@ const GameContainer = ({ plan, onClose }) => {
     }, [onClose]);
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center p-4">
             <div className="relative w-full max-w-4xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 relative">
