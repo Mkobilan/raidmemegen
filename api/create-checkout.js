@@ -34,10 +34,14 @@ export default async function handler(req, res) {
             customer_email: user.email,
             line_items: [
                 {
-                    price: 'price_1STxJKC86y95wOyLGxt8k0cv', // Hardcoded from original function
+                    price: process.env.STRIPE_PRICE_ID_PRO_MONTHLY,
                     quantity: 1,
                 },
             ],
+            subscription_data: {
+                trial_period_days: 14,
+            },
+            payment_method_collection: 'always',
             success_url: `${effectiveOrigin}?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: effectiveOrigin,
             metadata: {
