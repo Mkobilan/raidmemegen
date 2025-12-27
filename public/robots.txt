@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /settings
+Disallow: /overlay
+Disallow: /profile/
 
 # Canonical Sitemap
 Sitemap: https://raidmemegen.vercel.app/sitemap.xml

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Quote } from 'lucide-react';
+import { giphyService } from '../../services/giphyService';
 
 const PhaseDetailsModal = ({ isOpen, onClose, phase }) => {
     if (!isOpen || !phase) return null;
@@ -35,7 +36,12 @@ const PhaseDetailsModal = ({ isOpen, onClose, phase }) => {
                             <img
                                 src={phase.meme}
                                 alt={phase.name}
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain cursor-pointer"
+                                onClick={() => {
+                                    if (phase.analytics && phase.analytics.onclick) {
+                                        giphyService.trackEvent(phase.analytics.onclick.url);
+                                    }
+                                }}
                             />
                         ) : (
                             <div className="text-gray-600 font-gamer">NO SIGNAL</div>

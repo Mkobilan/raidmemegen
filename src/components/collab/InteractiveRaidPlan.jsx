@@ -1,4 +1,5 @@
-import { useState, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { giphyService } from '../../services/giphyService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, User as UserIcon, Shield, Sword, Heart, Save, Lock, Unlock, Check, X, ChevronDown, Download, Image as ImageIcon, FileText, Gamepad2, Monitor, MessageSquare } from 'lucide-react';
 import Card from '../ui/Card';
@@ -32,6 +33,16 @@ const InteractiveRaidPlan = () => {
     const allUsers = Object.values(participants).flat();
     // Unique users by user_id for the dropdown
     const onlineUsers = [...new Map(allUsers.filter(u => u.user_id).map(item => [item.user_id, item])).values()];
+
+    useEffect(() => {
+        if (plan && plan.phases) {
+            plan.phases.forEach(phase => {
+                if (phase.analytics && phase.analytics.onload) {
+                    giphyService.trackEvent(phase.analytics.onload.url);
+                }
+            });
+        }
+    }, [plan]);
 
     if (!plan) return (
         <div className="flex items-center justify-center h-64 text-gray-400 font-gamer animate-pulse">
@@ -231,7 +242,15 @@ const InteractiveRaidPlan = () => {
                     </button>
 
                     <button
-                        onClick={() => setShowDiscordModal(true)}
+                        onClick={() => {
+                            setShowDiscordModal(true);
+                            // Track onsent event for each Giphy result in the plan
+                            plan.phases.forEach(phase => {
+                                if (phase.analytics && phase.analytics.onsent) {
+                                    giphyService.trackEvent(phase.analytics.onsent.url);
+                                }
+                            });
+                        }}
                         className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] rounded-md text-white transition-all hover:scale-105 shadow-lg shadow-[#5865F2]/20 text-sm font-bold uppercase tracking-wider group"
                         title="Share to Discord"
                     >
@@ -286,6 +305,12 @@ const InteractiveRaidPlan = () => {
                                             setShowExportMenu(false); // Close menu immediately or keep open? Better close and show loading on main button
                                             try {
                                                 await exportPDF(plan, exportRef);
+                                                // Track onsent event
+                                                plan.phases.forEach(phase => {
+                                                    if (phase.analytics && phase.analytics.onsent) {
+                                                        giphyService.trackEvent(phase.analytics.onsent.url);
+                                                    }
+                                                });
                                             } catch (e) {
                                                 console.error(e);
                                             } finally {
@@ -304,6 +329,12 @@ const InteractiveRaidPlan = () => {
                                             setShowExportMenu(false);
                                             try {
                                                 await exportImage(exportRef, `${plan.raid}-mission-card.png`);
+                                                // Track onsent event
+                                                plan.phases.forEach(phase => {
+                                                    if (phase.analytics && phase.analytics.onsent) {
+                                                        giphyService.trackEvent(phase.analytics.onsent.url);
+                                                    }
+                                                });
                                             } catch (e) {
                                                 console.error(e);
                                             } finally {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { giphyService } from '../../services/giphyService';
 import {
     Share2, Download, Save, Copy, Check,
     Clock, Users, AlertTriangle, Terminal,
@@ -37,16 +38,43 @@ const RaidPlan = ({ plan, onExportPDF, onExportImage, onShare, onSave, onCreateO
 
     if (!plan) return null;
 
+    useEffect(() => {
+        if (plan && plan.phases) {
+            plan.phases.forEach(phase => {
+                if (phase.analytics && phase.analytics.onload) {
+                    giphyService.trackEvent(phase.analytics.onload.url);
+                }
+            });
+        }
+    }, [plan]);
+
     const handleExport = async (type) => {
         setIsExporting(true);
         try {
             if (type === 'pdf') await onExportPDF();
             if (type === 'image') await onExportImage();
+
+            // Track onsent event for each Giphy result in the plan
+            plan.phases.forEach(phase => {
+                if (phase.analytics && phase.analytics.onsent) {
+                    giphyService.trackEvent(phase.analytics.onsent.url);
+                }
+            });
         } catch (error) {
             console.error("Export failed:", error);
         } finally {
             setIsExporting(false);
         }
+    };
+
+    const handleShare = () => {
+        onShare();
+        // Track onsent event when sharing
+        plan.phases.forEach(phase => {
+            if (phase.analytics && phase.analytics.onsent) {
+                giphyService.trackEvent(phase.analytics.onsent.url);
+            }
+        });
     };
 
     const chartData = {
@@ -126,7 +154,7 @@ const RaidPlan = ({ plan, onExportPDF, onExportImage, onShare, onSave, onCreateO
                     )}
 
                     <button
-                        onClick={onShare}
+                        onClick={handleShare}
                         className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 transition-colors"
                     >
                         <Share2 className="w-4 h-4 mr-2" /> Share
@@ -197,7 +225,12 @@ const RaidPlan = ({ plan, onExportPDF, onExportImage, onShare, onSave, onCreateO
                 {plan.phases.map((phase, idx) => (
                     <motion.div key={idx} variants={item} className="h-full">
                         <div
-                            onClick={() => setSelectedPhase(phase)}
+                            onClick={() => {
+                                setSelectedPhase(phase);
+                                if (phase.analytics && phase.analytics.onclick) {
+                                    giphyService.trackEvent(phase.analytics.onclick.url);
+                                }
+                            }}
                             className="bg-gray-900 border border-gray-800 hover:border-raid-neon/50 rounded-xl overflow-hidden h-full flex flex-col hover:shadow-[0_0_15px_rgba(0,255,136,0.15)] transition-all duration-300 group cursor-pointer relative"
                         >
                             {/* Expand Hint */}

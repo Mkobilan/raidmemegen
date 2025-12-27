@@ -4,6 +4,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import localMemes from '../data/memes.json';
 import raidsData from '../data/raids.json';
+import { giphyService } from '../services/giphyService';
 
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
@@ -12,24 +13,27 @@ export const useRaidGen = (user, pro, isTrialActive, onLimitReached) => {
     const [plan, setPlan] = useState(null);
 
     const fetchMeme = async (query) => {
-        if (!GIPHY_API_KEY) {
-            console.warn('No Giphy API Key found, using local memes');
-            const randomMeme = localMemes[Math.floor(Math.random() * localMemes.length)];
-            return randomMeme.gif;
-        }
-
         try {
             const offset = Math.floor(Math.random() * 50);
-            const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=1&offset=${offset}&rating=pg-13`);
-            const data = await res.json();
+            const data = await giphyService.searchGifs(query, 1, offset);
+
             if (data.data && data.data.length > 0) {
-                return data.data[0].images.original.url;
+                const gif = data.data[0];
+                return {
+                    url: gif.images.original.url,
+                    analytics: gif.analytics
+                };
             }
         } catch (error) {
             console.error('Giphy API Error:', error);
         }
+
         // Fallback
-        return localMemes[Math.floor(Math.random() * localMemes.length)].gif;
+        const randomMeme = localMemes[Math.floor(Math.random() * localMemes.length)];
+        return {
+            url: randomMeme.gif,
+            analytics: null
+        };
     };
 
     const generateRaid = async ({ game, raid, squadSize, vibe, incrementGens }) => {
@@ -84,13 +88,14 @@ export const useRaidGen = (user, pro, isTrialActive, onLimitReached) => {
                     .replace('[tip]', quipOrTip); // Handle [tip] replacement
 
                 // Fetch visual
-                const memeUrl = await fetchMeme(searchQuery);
+                const memeData = await fetchMeme(searchQuery);
 
                 return {
                     name: phase.name,
                     text: generatedText,
                     time: Math.floor(seed() * 10 + 5),
-                    meme: memeUrl,
+                    meme: memeData.url,
+                    analytics: memeData.analytics,
                     quip: quipOrTip, // Can be a tip or a quip
                     isSerious, // Flag for UI
                     roles: phase.roles
