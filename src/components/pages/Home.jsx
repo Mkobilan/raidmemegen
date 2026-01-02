@@ -64,10 +64,9 @@ function Home() {
 
     // --- AUTO-SHOW BILLING MODAL ---
     useEffect(() => {
-        // If user is logged in, NOT pro, and hasn't seen the trial modal this session
-        if (user && !pro && !sessionStorage.getItem('hasSeenTrialModal')) {
-            // Check if user is actually "newish" or just logged in
-            // We can also check trial status. If trial is active, they should probably see it.
+        // If auth is loaded, user is logged in, NOT pro, and hasn't seen the trial modal this session
+        if (!authLoading && user && !pro && !sessionStorage.getItem('hasSeenTrialModal')) {
+            // Only show if trial is active
             if (isTrialActive) {
                 const timer = setTimeout(() => {
                     setShowTrialBillingModal(true);
@@ -76,7 +75,7 @@ function Home() {
                 return () => clearTimeout(timer);
             }
         }
-    }, [user, pro, isTrialActive]);
+    }, [user, pro, isTrialActive, authLoading]);
 
     // --- SAVED RAIDS LOGIC ---
     const fetchSavedRaids = async () => {
