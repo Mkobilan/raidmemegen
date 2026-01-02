@@ -1,3 +1,8 @@
+const Stripe = require('stripe');
+
+// Disable body parsing for webhook signature verification
+const config = { api: { bodyParser: false } };
+
 async function buffer(readable) {
     const chunks = [];
     for await (const chunk of readable) {
@@ -6,13 +11,7 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
-export const config = { api: { bodyParser: false } };
-
-export default async function handler(req, res) {
-    // Use dynamic imports to avoid ESM/CJS issues on Vercel
-    const Stripe = (await import('stripe')).default;
-    const { createClient } = await import('@supabase/supabase-js');
-
+async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -27,7 +26,6 @@ export default async function handler(req, res) {
     }
 
     const stripe = new Stripe(stripeSecretKey);
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const buf = await buffer(req);
     const sig = req.headers['stripe-signature'];
@@ -48,21 +46,50 @@ export default async function handler(req, res) {
                 const subscription = await stripe.subscriptions.retrieve(session.subscription);
                 const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null;
 
-                await supabase.from('profiles').update({
-                    is_pro: true,
-                    stripe_sub_id: session.subscription,
-                    trial_end_date: trialEnd,
-                    updated_at: new Date().toISOString()
-                }).eq('id', userId);
+                // Use Supabase REST API directly instead of supabase-js
+                const updateResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseServiceKey,
+                        'Authorization': `Bearer ${supabaseServiceKey}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        is_pro: true,
+                        stripe_sub_id: session.subscription,
+                        trial_end_date: trialEnd,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    console.error('[API] webhook: Failed to update profile', updateResponse.status);
+                }
             }
         } else if (event.type === 'customer.subscription.deleted') {
             const subscription = event.data.object;
-            await supabase.from('profiles').update({
-                is_pro: false,
-                stripe_sub_id: null,
-                trial_end_date: null,
-                updated_at: new Date().toISOString()
-            }).eq('stripe_sub_id', subscription.id);
+
+            // Use Supabase REST API directly
+            const updateResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?stripe_sub_id=eq.${subscription.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': supabaseServiceKey,
+                    'Authorization': `Bearer ${supabaseServiceKey}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                    is_pro: false,
+                    stripe_sub_id: null,
+                    trial_end_date: null,
+                    updated_at: new Date().toISOString()
+                })
+            });
+
+            if (!updateResponse.ok) {
+                console.error('[API] webhook: Failed to update profile on cancellation', updateResponse.status);
+            }
         }
 
         res.status(200).send({ received: true });
@@ -72,3 +99,5 @@ export default async function handler(req, res) {
     }
 }
 
+module.exports = handler;
+module.exports.config = config;

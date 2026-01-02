@@ -1,8 +1,6 @@
-export default async function handler(req, res) {
-    // Use dynamic imports to avoid ESM/CJS issues on Vercel
-    const Stripe = (await import('stripe')).default;
-    const { createClient } = await import('@supabase/supabase-js');
+const Stripe = require('stripe');
 
+async function handler(req, res) {
     console.log('[API] create-checkout: Started');
 
     if (req.method !== 'POST') {
@@ -15,12 +13,16 @@ export default async function handler(req, res) {
     const priceId = process.env.STRIPE_PRICE_ID_PRO_MONTHLY;
 
     if (!stripeSecretKey || !supabaseUrl || !supabaseAnonKey || !priceId) {
-        console.error('[API] create-checkout: Missing variables');
+        console.error('[API] create-checkout: Missing env vars', {
+            hasStripe: !!stripeSecretKey,
+            hasSupaUrl: !!supabaseUrl,
+            hasSupaKey: !!supabaseAnonKey,
+            hasPriceId: !!priceId
+        });
         return res.status(500).json({ error: 'Backend configuration error.' });
     }
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     try {
         const authHeader = req.headers.authorization;
@@ -29,15 +31,27 @@ export default async function handler(req, res) {
         }
 
         const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error } = await supabase.auth.getUser(token);
 
-        if (error || !user) {
+        // Use Supabase REST API directly instead of supabase-js
+        const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'apikey': supabaseAnonKey
+            }
+        });
+
+        if (!userResponse.ok) {
+            console.error('[API] create-checkout: Auth failed', userResponse.status);
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const user = await userResponse.json();
+        if (!user || !user.id) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
         const bodyData = req.body?.data || req.body || {};
-        const { origin } = bodyData;
-        const effectiveOrigin = origin || req.headers.origin || 'https://raidmemegen.vercel.app';
+        const origin = bodyData.origin || req.headers.origin || 'https://raidmemegen.vercel.app';
 
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
@@ -45,16 +59,17 @@ export default async function handler(req, res) {
             line_items: [{ price: priceId, quantity: 1 }],
             subscription_data: { trial_period_days: 14 },
             payment_method_collection: 'always',
-            success_url: `${effectiveOrigin}?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: effectiveOrigin,
+            success_url: `${origin}?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: origin,
             metadata: { user_id: user.id },
         });
 
-        console.log('[API] create-checkout: Session created');
+        console.log('[API] create-checkout: Session created successfully');
         return res.status(200).json({ sessionUrl: session.url });
     } catch (err) {
-        console.error('[API] create-checkout: Catch block', err);
+        console.error('[API] create-checkout: Error', err.message);
         return res.status(500).json({ error: err.message });
     }
 }
 
+module.exports = handler;
