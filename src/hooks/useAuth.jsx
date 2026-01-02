@@ -21,50 +21,40 @@ export const AuthProvider = ({ children }) => {
         console.log('AuthProvider: invoking useEffect');
         let mounted = true;
 
-        // Check active session
-        const initSession = async () => {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                console.log('AuthProvider: getSession result', { session, error });
-
-                if (error) throw error;
-
-                if (mounted) {
-                    setUser(session?.user ?? null);
-                    if (session?.user) {
-                        console.log('AuthProvider: user found, fetching data');
-                        await fetchUserData(session.user);
-                    } else {
-                        console.log('AuthProvider: no user, loading done');
-                        setAuthLoading(false);
-                    }
-                }
-            } catch (err) {
-                console.error('AuthProvider: getSession exception', err);
-                if (mounted) setAuthLoading(false);
-            }
-        };
-
-        initSession();
-
-        // Listen for changes
+        // Unified listener for auth state changes (covers initial load too)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            console.log('AuthProvider: onAuthStateChange', _event);
+            console.log('AuthProvider: onAuthStateChange', _event, session?.user?.id);
             if (!mounted) return;
 
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                await fetchUserData(session.user);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+
+            if (currentUser) {
+                // Only start loading if we haven't already finished for this specific user
+                if (userProfile?.id !== currentUser.id) {
+                    setAuthLoading(true);
+                    await fetchUserData(currentUser);
+                }
             } else {
                 setPro(false);
                 setGensCount(0);
+                setUserProfile(null);
                 setAuthLoading(false);
             }
         });
 
+        // Fallback: If no event fires in 2s, stop loading (e.g. anonymous user)
+        const timer = setTimeout(() => {
+            if (mounted && authLoading && !user) {
+                console.log('AuthProvider: Session check timeout - assuming no user');
+                setAuthLoading(false);
+            }
+        }, 3000);
+
         return () => {
             mounted = false;
             subscription.unsubscribe();
+            clearTimeout(timer);
         };
     }, []);
 
