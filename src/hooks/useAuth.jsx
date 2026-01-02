@@ -79,9 +79,9 @@ export const AuthProvider = ({ children }) => {
 
             const queryPromise = supabase
                 .from('profiles')
-                .select('*')
+                .select('id, is_pro, stripe_sub_id, gens_today, last_reset_date, trial_end_date, username, display_name, created_at, raid_stats')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
 
             const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
@@ -118,8 +118,9 @@ export const AuthProvider = ({ children }) => {
                 let trialActive = false;
                 let daysLeft = 0;
 
-                // Sync local pro state with database
-                const isUserPro = data.is_pro || !!data.stripe_sub_id;
+                // IMPORTANT: is_pro is true ONLY if they have a card/subscription in Stripe
+                // We sync this from Stripe webhooks.
+                const isUserPro = !!data.is_pro;
                 setPro(isUserPro);
 
                 if (data.trial_end_date) {
@@ -129,8 +130,7 @@ export const AuthProvider = ({ children }) => {
                     trialActive = diffTime > 0;
                 }
 
-                // If they are "Pro" but trialActive is true, it means they are in the Stripe trial period.
-                // If they are NOT "Pro", they don't have a card, so they aren't on a trial yet in the user's mind.
+                // isTrialActive is true if they have PRO status (card entered) AND the trial end date is in the future.
                 setIsTrialActive(isUserPro && trialActive);
                 setTrialDaysLeft(daysLeft);
             } else {

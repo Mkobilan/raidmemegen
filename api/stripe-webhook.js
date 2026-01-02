@@ -50,12 +50,19 @@ export default async function handler(req, res) {
             const session = event.data.object;
             const userId = session.metadata.user_id;
 
-            if (userId) {
+            if (userId && session.subscription) {
+                // Get subscription details to find trial end
+                const subscription = await stripe.subscriptions.retrieve(session.subscription);
+                const trialEnd = subscription.trial_end
+                    ? new Date(subscription.trial_end * 1000).toISOString()
+                    : null;
+
                 const { error } = await supabase
                     .from('profiles')
                     .update({
                         is_pro: true,
                         stripe_sub_id: session.subscription,
+                        trial_end_date: trialEnd,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', userId);
@@ -66,10 +73,15 @@ export default async function handler(req, res) {
             const subscription = event.data.object;
             const isCanceled = subscription.status === 'canceled' || subscription.status === 'unpaid';
 
+            const trialEnd = subscription.trial_end
+                ? new Date(subscription.trial_end * 1000).toISOString()
+                : null;
+
             const { error } = await supabase
                 .from('profiles')
                 .update({
                     is_pro: !isCanceled,
+                    trial_end_date: trialEnd,
                     updated_at: new Date().toISOString()
                 })
                 .eq('stripe_sub_id', subscription.id);
@@ -83,6 +95,7 @@ export default async function handler(req, res) {
                 .update({
                     is_pro: false,
                     stripe_sub_id: null,
+                    trial_end_date: null,
                     updated_at: new Date().toISOString()
                 })
                 .eq('stripe_sub_id', subscription.id);

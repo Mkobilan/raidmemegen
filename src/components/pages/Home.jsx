@@ -64,14 +64,15 @@ function Home() {
 
     // --- AUTO-SHOW BILLING MODAL ---
     useEffect(() => {
-        // If auth is loaded, user is logged in, NOT pro (hasn't provided credit card for trial/sub),
-        // and hasn't seen the trial modal this session
-        if (!authLoading && user && !pro && !sessionStorage.getItem('hasSeenTrialModal')) {
+        // If auth is loaded, user is logged in, and NOT pro (no card entered)
+        if (!authLoading && user && !pro) {
             const timer = setTimeout(() => {
                 setShowTrialBillingModal(true);
-                sessionStorage.setItem('hasSeenTrialModal', 'true');
-            }, 1500); // Small delay for better UX
+            }, 1000); // 1s delay
             return () => clearTimeout(timer);
+        } else {
+            // Close it if they somehow become pro (e.g. via separate tab)
+            setShowTrialBillingModal(false);
         }
     }, [user, pro, authLoading]);
 
