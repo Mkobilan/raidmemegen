@@ -1,9 +1,7 @@
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
-module.exports = async function handler(req, res) {
-    console.log('[API] manage-subscription: Start');
-
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -13,7 +11,6 @@ module.exports = async function handler(req, res) {
     const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
     if (!stripeSecretKey || !supabaseUrl || !supabaseAnonKey) {
-        console.error('[API] manage-subscription: Missing Env Vars');
         return res.status(500).json({ error: 'Backend configuration error.' });
     }
 
@@ -23,16 +20,13 @@ module.exports = async function handler(req, res) {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            console.error('[API] manage-subscription: Missing Auth Header');
             return res.status(401).json({ error: 'Missing Authorization header' });
         }
 
         const token = authHeader.replace('Bearer ', '');
-        console.log('[API] manage-subscription: Fetching user');
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
-            console.error('[API] manage-subscription: Auth error', error);
             return res.status(401).json({ error: 'Invalid token' });
         }
 
@@ -45,10 +39,7 @@ module.exports = async function handler(req, res) {
         if (customers.data.length > 0) {
             customerId = customers.data[0].id;
         } else {
-            console.error('[API] manage-subscription: Customer not found');
-            return res.status(404).json({
-                error: 'Stripe customer not found.'
-            });
+            return res.status(404).json({ error: 'Stripe customer not found.' });
         }
 
         const { origin } = req.body || {};
@@ -61,7 +52,7 @@ module.exports = async function handler(req, res) {
 
         return res.status(200).json({ url: portalSession.url });
     } catch (err) {
-        console.error('[API] manage-subscription: Internal Error', err);
+        console.error('Portal Error:', err);
         return res.status(500).json({ error: err.message });
     }
 }

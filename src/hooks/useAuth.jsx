@@ -21,21 +21,24 @@ export const AuthProvider = ({ children }) => {
         console.log('AuthProvider: invoking useEffect');
         let mounted = true;
 
-        // Unified listener for auth state changes (covers initial load too)
+        // Use a single, unified listener for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            console.log('AuthProvider: onAuthStateChange', _event, session?.user?.id);
             if (!mounted) return;
 
             const currentUser = session?.user ?? null;
+            console.log('AuthProvider: onAuthStateChange', _event, currentUser?.id);
+
+            // Update user state immediately
             setUser(currentUser);
 
             if (currentUser) {
-                // Only start loading if we haven't already finished for this specific user
-                if (userProfile?.id !== currentUser.id) {
-                    setAuthLoading(true);
+                // IMPORTANT: Check if we actually need to fetch or if we already have this user's data
+                // This prevents the "INITIAL_SESSION" and "SIGNED_IN" events from double-firing the fetch
+                if (!userProfile || userProfile.id !== currentUser.id) {
                     await fetchUserData(currentUser);
                 }
             } else {
+                // Clear user data
                 setPro(false);
                 setGensCount(0);
                 setUserProfile(null);
@@ -43,24 +46,26 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        // Fallback: If no event fires in 2s, stop loading (e.g. anonymous user)
-        const timer = setTimeout(() => {
-            if (mounted && authLoading && !user) {
-                console.log('AuthProvider: Session check timeout - assuming no user');
+        // Fail-safe: ensure loading stops if no session is ever found (e.g. guest user)
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (mounted && !session?.user) {
                 setAuthLoading(false);
             }
-        }, 3000);
+        };
+        checkSession();
 
         return () => {
             mounted = false;
             subscription.unsubscribe();
-            clearTimeout(timer);
         };
     }, []);
 
     const fetchUserData = async (currentUser) => {
         console.log('fetchUserData: starting for user', currentUser.id);
         const userId = currentUser.id;
+        setAuthLoading(true);
+
         if (fetchInProgress.current === userId) {
             console.log('fetchUserData: fetch already in progress for', userId);
             return;

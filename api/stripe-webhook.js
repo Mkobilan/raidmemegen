@@ -1,5 +1,5 @@
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 // Vercel helper buffer for raw body
 async function buffer(readable) {
@@ -10,7 +10,13 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
-module.exports = async function handler(req, res) {
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -21,7 +27,6 @@ module.exports = async function handler(req, res) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!stripeSecretKey || !endpointSecret || !supabaseUrl || !supabaseServiceKey) {
-        console.error('Missing Webhook Environment Variables');
         return res.status(500).send('Webhook configuration missing');
     }
 
@@ -35,7 +40,6 @@ module.exports = async function handler(req, res) {
     try {
         event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
     } catch (err) {
-        console.error(`Webhook Error: ${err.message}`);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
@@ -50,7 +54,7 @@ module.exports = async function handler(req, res) {
                     ? new Date(subscription.trial_end * 1000).toISOString()
                     : null;
 
-                const { error } = await supabase
+                await supabase
                     .from('profiles')
                     .update({
                         is_pro: true,
@@ -59,8 +63,6 @@ module.exports = async function handler(req, res) {
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', userId);
-
-                if (error) throw error;
             }
         } else if (event.type === 'customer.subscription.updated') {
             const subscription = event.data.object;
@@ -70,7 +72,7 @@ module.exports = async function handler(req, res) {
                 ? new Date(subscription.trial_end * 1000).toISOString()
                 : null;
 
-            const { error } = await supabase
+            await supabase
                 .from('profiles')
                 .update({
                     is_pro: !isCanceled,
@@ -78,12 +80,9 @@ module.exports = async function handler(req, res) {
                     updated_at: new Date().toISOString()
                 })
                 .eq('stripe_sub_id', subscription.id);
-
-            if (error) console.error('Error updating subscription status:', error);
         } else if (event.type === 'customer.subscription.deleted') {
             const subscription = event.data.object;
-
-            const { error } = await supabase
+            await supabase
                 .from('profiles')
                 .update({
                     is_pro: false,
@@ -92,8 +91,6 @@ module.exports = async function handler(req, res) {
                     updated_at: new Date().toISOString()
                 })
                 .eq('stripe_sub_id', subscription.id);
-
-            if (error) console.error('Error deleting subscription status:', error);
         } else if (event.type === 'invoice.payment_failed') {
             const invoice = event.data.object;
             if (invoice.subscription) {
@@ -106,13 +103,7 @@ module.exports = async function handler(req, res) {
 
         res.status(200).send({ received: true });
     } catch (err) {
-        console.error('Webhook handler failed:', err);
+        console.error('Webhook Error:', err);
         res.status(500).send('Server Error');
     }
 }
-// Vercel config for body parsing
-module.exports.config = {
-    api: {
-        bodyParser: false,
-    },
-};
