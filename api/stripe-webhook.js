@@ -1,7 +1,7 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
 // Disable body parsing for webhook signature verification
-const config = { api: { bodyParser: false } };
+export const config = { api: { bodyParser: false } };
 
 async function buffer(readable) {
     const chunks = [];
@@ -11,7 +11,7 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
-async function handler(req, res) {
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -46,7 +46,7 @@ async function handler(req, res) {
                 const subscription = await stripe.subscriptions.retrieve(session.subscription);
                 const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null;
 
-                // Use Supabase REST API directly instead of supabase-js
+                // Use Supabase REST API directly
                 const updateResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
                     method: 'PATCH',
                     headers: {
@@ -98,6 +98,3 @@ async function handler(req, res) {
         res.status(500).send('Server Error');
     }
 }
-
-module.exports = handler;
-module.exports.config = config;

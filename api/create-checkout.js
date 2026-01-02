@@ -1,6 +1,6 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-async function handler(req, res) {
+export default async function handler(req, res) {
     console.log('[API] create-checkout: Started');
 
     if (req.method !== 'POST') {
@@ -32,7 +32,7 @@ async function handler(req, res) {
 
         const token = authHeader.replace('Bearer ', '');
 
-        // Use Supabase REST API directly instead of supabase-js
+        // Supabase REST API directly - avoids packet loading issues
         const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -71,5 +71,3 @@ async function handler(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
-
-module.exports = handler;
