@@ -15,61 +15,36 @@ export const AuthProvider = ({ children }) => {
 
     const getUTCToday = () => new Date().toISOString().split('T')[0];
 
-    // Helper for profile fetching with retries and timeout
-    const fetchWithRetry = async (userId, currentUser, retries = 2) => {
-        const timeoutDuration = 10000; // 10s per attempt
-
-        for (let i = 0; i <= retries; i++) {
-            try {
-                console.log(`fetchUserData: attempt ${i + 1} for ${userId}`);
-
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('TIMEOUT')), timeoutDuration)
-                );
-
-                const queryPromise = supabase
-                    .from('profiles')
-                    .select('id, is_pro, stripe_sub_id, gens_today, last_reset_date, trial_end_date, username, display_name, created_at, raid_stats')
-                    .eq('id', userId)
-                    .maybeSingle();
-
-                const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-
-                if (error) {
-                    console.warn(`fetchUserData: query error (attempt ${i + 1}):`, error);
-                    // If it's a transient error, we retry. If it's a real PG error, we might stop.
-                    if (i === retries) throw error;
-                    continue;
-                }
-
-                return data; // Success
-            } catch (err) {
-                console.warn(`fetchUserData: attempt ${i + 1} failed:`, err.message);
-                if (i === retries) throw err;
-                // Wait a bit before retry
-                await new Promise(r => setTimeout(r, 1000));
-            }
-        }
-    };
-
     const fetchUserData = async (currentUser) => {
         if (!currentUser) return;
         const userId = currentUser.id;
 
-        if (fetchInProgress.current === userId) {
-            console.log('fetchUserData: already in progress for', userId);
-            return;
-        }
+        if (fetchInProgress.current === userId) return;
         fetchInProgress.current = userId;
         setAuthLoading(true);
 
         try {
-            const data = await fetchWithRetry(userId, currentUser);
+            console.log('fetchUserData: querying profiles for', userId);
+
+            // Single 30s timeout for the Supabase query
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('TIMEOUT')), 30000)
+            );
+
+            const queryPromise = supabase
+                .from('profiles')
+                .select('id, is_pro, stripe_sub_id, gens_today, last_reset_date, trial_end_date, username, display_name, created_at, raid_stats')
+                .eq('id', userId)
+                .maybeSingle();
+
+            const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+            if (error) throw error;
+
             const today = getUTCToday();
 
             if (data) {
-                console.log('fetchUserData: profile found', data.id);
-                // Daily reset logic
+                console.log('fetchUserData: profile found');
                 let todayGens = data.gens_today || 0;
                 if (data.last_reset_date !== today) {
                     todayGens = 0;
@@ -83,7 +58,6 @@ export const AuthProvider = ({ children }) => {
                 setGensCount(todayGens);
                 setUserProfile(data);
 
-                // Trial calculation
                 const now = new Date();
                 let trialActive = false;
                 let daysLeft = 0;
@@ -98,7 +72,7 @@ export const AuthProvider = ({ children }) => {
                 setIsTrialActive(!!data.is_pro && trialActive);
                 setTrialDaysLeft(daysLeft);
             } else {
-                console.log('fetchUserData: creating new profile');
+                console.log('fetchUserData: creating profile');
                 const newProfile = {
                     id: userId,
                     is_pro: false,
@@ -119,30 +93,29 @@ export const AuthProvider = ({ children }) => {
                 setUserProfile(newProfile);
             }
         } catch (error) {
-            console.error('fetchUserData: FINAL failure', error);
+            console.error('fetchUserData error:', error);
         } finally {
             fetchInProgress.current = null;
             setAuthLoading(false);
-            console.log('fetchUserData: complete');
         }
     };
 
     useEffect(() => {
-        console.log('AuthProvider: initializing');
+        console.log('AuthProvider: init');
         let mounted = true;
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (!mounted) return;
             const currentUser = session?.user ?? null;
-            console.log('AuthProvider: state change', _event, currentUser?.id);
+            console.log('AuthProvider: onAuthStateChange', _event, currentUser?.id);
 
             setUser(currentUser);
 
             if (currentUser) {
-                // Fetch user data if not already loaded or if user changed
-                if (!userProfile || userProfile.id !== currentUser.id) {
-                    await fetchUserData(currentUser);
-                }
+                // IMPORTANT: 100ms delay to avoid race condition with auth context
+                setTimeout(() => {
+                    if (mounted) fetchUserData(currentUser);
+                }, 100);
             } else {
                 setPro(false);
                 setGensCount(0);
@@ -151,14 +124,12 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        // Fail-safe to ensure loading spinner doesn't get stuck forever
-        const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
+        // Fail-safe to stop loading if no session is ever found
+        supabase.auth.getSession().then(({ data: { session } }) => {
             if (mounted && !session?.user) {
                 setAuthLoading(false);
             }
-        };
-        checkSession();
+        });
 
         return () => {
             mounted = false;
