@@ -1,5 +1,5 @@
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 async function buffer(readable) {
     const chunks = [];
@@ -9,7 +9,9 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
-module.exports = async function handler(req, res) {
+export const config = { api: { bodyParser: false } };
+
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -67,6 +69,4 @@ module.exports = async function handler(req, res) {
         console.error('[API] webhook Error:', err);
         res.status(500).send('Server Error');
     }
-};
-
-module.exports.config = { api: { bodyParser: false } };
+}
