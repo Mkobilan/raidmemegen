@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext({});
@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     const [isTrialActive, setIsTrialActive] = useState(true);
     const [trialDaysLeft, setTrialDaysLeft] = useState(14);
     const [gensCount, setGensCount] = useState(0);
+    const fetchInProgress = useRef(null); // Track ongoing fetch to prevent overlap
 
     const getUTCToday = () => new Date().toISOString().split('T')[0];
 
@@ -70,11 +71,17 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async (currentUser) => {
         console.log('fetchUserData: starting for user', currentUser.id);
         const userId = currentUser.id;
+        if (fetchInProgress.current === userId) {
+            console.log('fetchUserData: fetch already in progress for', userId);
+            return;
+        }
+        fetchInProgress.current = userId;
+
         try {
             console.log('fetchUserData: querying profiles table...');
 
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile fetch request timed out')), 15000)
+                setTimeout(() => reject(new Error('Profile fetch request timed out')), 30000)
             );
 
             const queryPromise = supabase
@@ -157,6 +164,7 @@ export const AuthProvider = ({ children }) => {
             console.error('Error in fetchUserData:', error);
         } finally {
             console.log('fetchUserData: finished, setting authLoading false');
+            fetchInProgress.current = null;
             setAuthLoading(false);
         }
     };

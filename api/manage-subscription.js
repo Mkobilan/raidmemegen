@@ -1,7 +1,7 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     console.log('[API] manage-subscription: Start');
 
     if (req.method !== 'POST') {
@@ -36,8 +36,6 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        console.log('[API] manage-subscription: User verified', user.id);
-
         const customers = await stripe.customers.list({
             email: user.email,
             limit: 1
@@ -47,23 +45,20 @@ export default async function handler(req, res) {
         if (customers.data.length > 0) {
             customerId = customers.data[0].id;
         } else {
-            console.error('[API] manage-subscription: Customer not found for email', user.email);
+            console.error('[API] manage-subscription: Customer not found');
             return res.status(404).json({
-                error: 'Stripe customer not found.',
-                details: 'Please ensure you have an active trial or subscription.'
+                error: 'Stripe customer not found.'
             });
         }
 
         const { origin } = req.body || {};
         const effectiveOrigin = origin || req.headers.origin || 'https://raidmemegen.vercel.app';
 
-        console.log('[API] manage-subscription: Creating portal session for', customerId);
         const portalSession = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: `${effectiveOrigin}/settings`,
         });
 
-        console.log('[API] manage-subscription: Portal session created');
         return res.status(200).json({ url: portalSession.url });
     } catch (err) {
         console.error('[API] manage-subscription: Internal Error', err);

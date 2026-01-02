@@ -1,5 +1,5 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
 // Vercel helper buffer for raw body
 async function buffer(readable) {
@@ -10,13 +10,7 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -51,7 +45,6 @@ export default async function handler(req, res) {
             const userId = session.metadata.user_id;
 
             if (userId && session.subscription) {
-                // Get subscription details to find trial end
                 const subscription = await stripe.subscriptions.retrieve(session.subscription);
                 const trialEnd = subscription.trial_end
                     ? new Date(subscription.trial_end * 1000).toISOString()
@@ -117,3 +110,9 @@ export default async function handler(req, res) {
         res.status(500).send('Server Error');
     }
 }
+// Vercel config for body parsing
+module.exports.config = {
+    api: {
+        bodyParser: false,
+    },
+};

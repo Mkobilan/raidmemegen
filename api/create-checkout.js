@@ -1,7 +1,7 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     console.log('[API] create-checkout: Start');
 
     if (req.method !== 'POST') {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2023-10-16', // Explicit version
+        apiVersion: '2023-10-16',
     });
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         }
 
         const token = authHeader.replace('Bearer ', '');
-        console.log('[API] create-checkout: Fetching user from Supabase');
+        console.log('[API] create-checkout: Fetching user');
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
@@ -78,8 +78,7 @@ export default async function handler(req, res) {
     } catch (err) {
         console.error('[API] create-checkout: Internal Error', err);
         return res.status(500).json({
-            error: err.message || 'Internal Server Error',
-            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+            error: err.message || 'Internal Server Error'
         });
     }
 }
