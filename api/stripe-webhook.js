@@ -1,7 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-// Vercel helper buffer for raw body
 async function buffer(readable) {
     const chunks = [];
     for await (const chunk of readable) {
@@ -21,29 +20,24 @@ export default async function handler(req, res) {
         return res.status(405).send('Method Not Allowed');
     }
 
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!stripeSecretKey || !endpointSecret || !supabaseUrl || !supabaseServiceKey) {
-        return res.status(500).send('Webhook configuration missing');
-    }
-
-    const stripe = new Stripe(stripeSecretKey);
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'];
-
-    let event;
     try {
-        event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
-    } catch (err) {
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+        const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+        const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    try {
+        if (!stripeSecretKey || !endpointSecret || !supabaseUrl || !supabaseServiceKey) {
+            return res.status(500).send('Webhook configuration missing');
+        }
+
+        const stripe = new Stripe(stripeSecretKey);
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+        const buf = await buffer(req);
+        const sig = req.headers['stripe-signature'];
+
+        const event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
+
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
             const userId = session.metadata.user_id;
@@ -101,9 +95,9 @@ export default async function handler(req, res) {
             }
         }
 
-        res.status(200).send({ received: true });
+        return res.status(200).send({ received: true });
     } catch (err) {
-        console.error('Webhook Error:', err);
-        res.status(500).send('Server Error');
+        console.error('[API] stripe-webhook Error:', err);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 }
