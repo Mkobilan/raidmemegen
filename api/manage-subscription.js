@@ -1,16 +1,22 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const supabase = createClient(
-    process.env.VITE_SUPABASE_URL,
-    process.env.VITE_SUPABASE_ANON_KEY
-);
-
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (!stripeSecretKey || !supabaseUrl || !supabaseAnonKey) {
+        console.error('Missing Environment Variables in manage-subscription');
+        return res.status(500).json({ error: 'Backend configuration error.' });
+    }
+
+    const stripe = new Stripe(stripeSecretKey);
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     try {
         const authHeader = req.headers.authorization;
@@ -25,11 +31,6 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        // Fetch user profile to get stripe_customer_id
-        // Stripe stores customer IDs. We should really store stripe_customer_id in our profiles table too.
-        // If we don't have it, we can search by email or wait for a webhook to populate it.
-        // For now, we'll try to find the customer by email.
-
         const customers = await stripe.customers.list({
             email: user.email,
             limit: 1
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
         } else {
             return res.status(404).json({
                 error: 'Stripe customer not found.',
-                details: 'This usually happens if your subscription was updated manually in the database. Please contact support or upgrade via the pricing page.'
+                details: 'Please ensure you have an active trial or subscription.'
             });
         }
 

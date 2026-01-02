@@ -1,22 +1,5 @@
-
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-
-// Use Service Role for admin access to DB
-const supabase = createClient(
-    process.env.VITE_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-// Disable body parsing for verification
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
 
 // Vercel helper buffer for raw body
 async function buffer(readable) {
@@ -27,10 +10,29 @@ async function buffer(readable) {
     return Buffer.concat(chunks);
 }
 
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!stripeSecretKey || !endpointSecret || !supabaseUrl || !supabaseServiceKey) {
+        console.error('Missing Webhook Environment Variables');
+        return res.status(500).send('Webhook configuration missing');
+    }
+
+    const stripe = new Stripe(stripeSecretKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const buf = await buffer(req);
     const sig = req.headers['stripe-signature'];
@@ -59,13 +61,11 @@ export default async function handler(req, res) {
                     .eq('id', userId);
 
                 if (error) throw error;
-                console.log(`Checkout completed: User ${userId} upgraded to Pro.`);
             }
         } else if (event.type === 'customer.subscription.updated') {
             const subscription = event.data.object;
             const isCanceled = subscription.status === 'canceled' || subscription.status === 'unpaid';
 
-            // Sync status based on Stripe's source of truth
             const { error } = await supabase
                 .from('profiles')
                 .update({
@@ -90,13 +90,11 @@ export default async function handler(req, res) {
             if (error) console.error('Error deleting subscription status:', error);
         } else if (event.type === 'invoice.payment_failed') {
             const invoice = event.data.object;
-            // Revoke access if payment fails after trial/renewal
             if (invoice.subscription) {
                 await supabase
                     .from('profiles')
                     .update({ is_pro: false })
                     .eq('stripe_sub_id', invoice.subscription);
-                console.log(`Payment failed for subscription ${invoice.subscription}. Access revoked.`);
             }
         }
 
