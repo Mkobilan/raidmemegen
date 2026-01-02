@@ -16,11 +16,16 @@ import {
 import BentoCard from '../landing/BentoCard';
 import Navbar from '../layout/Navbar';
 import Footer from '../layout/Footer';
+import AuthModal from '../auth/AuthModal';
 import { useAuth } from '../../hooks/useAuth';
+import { useState } from 'react';
 import warroomPreview from '../../assets/warroom_preview.png';
 
 const LandingPage = () => {
-    const { user, pro, logout } = useAuth();
+    const { user, pro, logout, login, signup, authLoading } = useAuth();
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [isSignup, setIsSignup] = useState(false);
+    const [authError, setAuthError] = useState('');
 
     const features = [
         {
@@ -55,6 +60,21 @@ const LandingPage = () => {
         }
     ];
 
+    const handleAuthSubmit = async ({ email, password, username }) => {
+        setAuthError('');
+        try {
+            if (isSignup) {
+                await signup(email, password, username);
+                alert("Account created! Please confirm your email to proceed.");
+            } else {
+                await login(email, password);
+            }
+            setShowAuthModal(false);
+        } catch (error) {
+            setAuthError(error.message);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-raid-neon selection:text-black flex flex-col overflow-x-hidden">
             {/* Background Noise & Glow */}
@@ -66,7 +86,7 @@ const LandingPage = () => {
                 <Navbar
                     user={user}
                     isPro={pro}
-                    onLoginClick={() => window.location.href = '/war-room'}
+                    onLoginClick={() => { setIsSignup(false); setShowAuthModal(true); }}
                     onLogoutClick={logout}
                     onSavedClick={() => window.location.href = '/war-room'}
                 />
@@ -178,9 +198,12 @@ const LandingPage = () => {
                             <p className="text-gray-400 text-xl mb-12 max-w-2xl mx-auto">
                                 Join the pro tier for just $5/month. Get a <strong className="text-raid-neon">14-day free trial</strong>, unlimited generations, premium export templates, and early access to new game integrations.
                             </p>
-                            <Link to="/war-room" className="px-12 py-5 bg-white text-black font-gamer font-bold rounded-full hover:scale-105 transition-transform inline-block shadow-2xl shadow-raid-neon/20">
+                            <button
+                                onClick={() => { setIsSignup(true); setShowAuthModal(true); }}
+                                className="px-12 py-5 bg-white text-black font-gamer font-bold rounded-full hover:scale-105 transition-transform inline-block shadow-2xl shadow-raid-neon/20"
+                            >
                                 START YOUR 14-DAY TRIAL
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -197,6 +220,16 @@ const LandingPage = () => {
             </div>
 
             <Footer />
+
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                isSignup={isSignup}
+                onToggleMode={() => { setIsSignup(!isSignup); setAuthError(''); }}
+                onSubmit={handleAuthSubmit}
+                error={authError}
+                authLoading={authLoading}
+            />
         </div>
     );
 };

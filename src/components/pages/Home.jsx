@@ -10,6 +10,7 @@ import UpgradeModal from '../raid/UpgradeModal';
 import ShareModal from '../raid/ShareModal';
 import OverlayCreator from '../raid/OverlayCreator';
 import SubmitGalleryModal from '../raid/SubmitGalleryModal';
+import TrialBillingModal from '../raid/TrialBillingModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useRaidGen } from '../../hooks/useRaidGen';
 import { useGallery } from '../../hooks/useGallery';
@@ -40,6 +41,7 @@ function Home() {
     const [showShareModal, setShowShareModal] = useState(false);
     const [showOverlayCreator, setShowOverlayCreator] = useState(false);
     const [showSubmitGalleryModal, setShowSubmitGalleryModal] = useState(false);
+    const [showTrialBillingModal, setShowTrialBillingModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
     const [authError, setAuthError] = useState('');
     const exportRef = useRef(null);
@@ -59,6 +61,22 @@ function Home() {
 
     // Gallery Hook
     const { submitToGallery } = useGallery(user);
+
+    // --- AUTO-SHOW BILLING MODAL ---
+    useEffect(() => {
+        // If user is logged in, NOT pro, and hasn't seen the trial modal this session
+        if (user && !pro && !sessionStorage.getItem('hasSeenTrialModal')) {
+            // Check if user is actually "newish" or just logged in
+            // We can also check trial status. If trial is active, they should probably see it.
+            if (isTrialActive) {
+                const timer = setTimeout(() => {
+                    setShowTrialBillingModal(true);
+                    sessionStorage.setItem('hasSeenTrialModal', 'true');
+                }, 1500); // Small delay for better UX
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [user, pro, isTrialActive]);
 
     // --- SAVED RAIDS LOGIC ---
     const fetchSavedRaids = async () => {
@@ -327,6 +345,12 @@ function Home() {
                 onClose={() => setShowSubmitGalleryModal(false)}
                 plan={plan}
                 onSubmit={submitToGallery}
+            />
+
+            <TrialBillingModal
+                isOpen={showTrialBillingModal}
+                onClose={() => setShowTrialBillingModal(false)}
+                onUpgrade={handleUpgrade}
             />
         </div>
     );

@@ -107,14 +107,26 @@ export const AuthProvider = ({ children }) => {
                 setGensCount(todayGens);
                 setUserProfile(data); // Expose full profile
 
-                // Calculate trial status
-                const createdAt = new Date(data.created_at);
+                // Calculate trial status using trial_end_date if available
                 const now = new Date();
-                const diffTime = Math.abs(now - createdAt);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const daysLeft = Math.max(0, 14 - diffDays);
+                let trialActive = false;
+                let daysLeft = 0;
 
-                setIsTrialActive(diffDays <= 14);
+                if (data.trial_end_date) {
+                    const trialEnd = new Date(data.trial_end_date);
+                    const diffTime = trialEnd - now;
+                    daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+                    trialActive = diffTime > 0;
+                } else {
+                    // Fallback to old creation date logic if trial_end_date is missing
+                    const createdAt = new Date(data.created_at);
+                    const diffTime = Math.abs(now - createdAt);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    daysLeft = Math.max(0, 14 - diffDays);
+                    trialActive = diffDays <= 14;
+                }
+
+                setIsTrialActive(trialActive);
                 setTrialDaysLeft(daysLeft);
             } else {
                 console.log('fetchUserData: creating new profile');
@@ -126,7 +138,8 @@ export const AuthProvider = ({ children }) => {
                     last_reset_date: today,
                     username: currentUser?.user_metadata?.username || currentUser?.email?.split('@')[0] || 'user_' + userId.slice(0, 8),
                     display_name: currentUser?.user_metadata?.username || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0],
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    trial_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
                 };
 
                 const { error: insertError } = await supabase.from('profiles').insert([newProfile]);
