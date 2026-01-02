@@ -85,10 +85,16 @@ export const AuthProvider = ({ children }) => {
 
             const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-                console.error('Error fetching profile:', error);
+            if (error) {
+                console.warn('Profile fetch error:', error);
+                // If it's 406 or other error, we might still want to proceed to creation 
+                // but let's be careful not to create duplicates if it's just a temporary error.
+                if (error.code === 'PGRST116') {
+                    console.log('fetchUserData: profile not found (PGRST116)');
+                } else {
+                    console.error('Unexpected profile fetch error:', error);
+                }
             }
-            console.log('fetchUserData: profile query result', { data, error });
 
             const today = getUTCToday();
 
@@ -112,21 +118,20 @@ export const AuthProvider = ({ children }) => {
                 let trialActive = false;
                 let daysLeft = 0;
 
+                // Sync local pro state with database
+                const isUserPro = data.is_pro || !!data.stripe_sub_id;
+                setPro(isUserPro);
+
                 if (data.trial_end_date) {
                     const trialEnd = new Date(data.trial_end_date);
                     const diffTime = trialEnd - now;
                     daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
                     trialActive = diffTime > 0;
-                } else {
-                    // Fallback to old creation date logic if trial_end_date is missing
-                    const createdAt = new Date(data.created_at);
-                    const diffTime = Math.abs(now - createdAt);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    daysLeft = Math.max(0, 14 - diffDays);
-                    trialActive = diffDays <= 14;
                 }
 
-                setIsTrialActive(trialActive);
+                // If they are "Pro" but trialActive is true, it means they are in the Stripe trial period.
+                // If they are NOT "Pro", they don't have a card, so they aren't on a trial yet in the user's mind.
+                setIsTrialActive(isUserPro && trialActive);
                 setTrialDaysLeft(daysLeft);
             } else {
                 console.log('fetchUserData: creating new profile');
@@ -138,16 +143,15 @@ export const AuthProvider = ({ children }) => {
                     last_reset_date: today,
                     username: currentUser?.user_metadata?.username || currentUser?.email?.split('@')[0] || 'user_' + userId.slice(0, 8),
                     display_name: currentUser?.user_metadata?.username || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0],
-                    created_at: new Date().toISOString(),
-                    trial_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+                    trial_end_date: null // Don't give automatic 14 days anymore
                 };
 
                 const { error: insertError } = await supabase.from('profiles').insert([newProfile]);
                 if (insertError) console.error('fetchUserData: insert error', insertError);
                 setPro(false);
                 setGensCount(0);
-                setIsTrialActive(true);
-                setTrialDaysLeft(14);
+                setIsTrialActive(false);
+                setTrialDaysLeft(0);
             }
         } catch (error) {
             console.error('Error in fetchUserData:', error);

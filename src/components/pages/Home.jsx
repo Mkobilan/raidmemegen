@@ -64,18 +64,16 @@ function Home() {
 
     // --- AUTO-SHOW BILLING MODAL ---
     useEffect(() => {
-        // If auth is loaded, user is logged in, NOT pro, and hasn't seen the trial modal this session
+        // If auth is loaded, user is logged in, NOT pro (hasn't provided credit card for trial/sub),
+        // and hasn't seen the trial modal this session
         if (!authLoading && user && !pro && !sessionStorage.getItem('hasSeenTrialModal')) {
-            // Only show if trial is active
-            if (isTrialActive) {
-                const timer = setTimeout(() => {
-                    setShowTrialBillingModal(true);
-                    sessionStorage.setItem('hasSeenTrialModal', 'true');
-                }, 1500); // Small delay for better UX
-                return () => clearTimeout(timer);
-            }
+            const timer = setTimeout(() => {
+                setShowTrialBillingModal(true);
+                sessionStorage.setItem('hasSeenTrialModal', 'true');
+            }, 1500); // Small delay for better UX
+            return () => clearTimeout(timer);
         }
-    }, [user, pro, isTrialActive, authLoading]);
+    }, [user, pro, authLoading]);
 
     // --- SAVED RAIDS LOGIC ---
     const fetchSavedRaids = async () => {
