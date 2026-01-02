@@ -1,6 +1,3 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
-
 async function buffer(readable) {
     const chunks = [];
     for await (const chunk of readable) {
@@ -12,6 +9,10 @@ async function buffer(readable) {
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
+    // Use dynamic imports to avoid ESM/CJS issues on Vercel
+    const Stripe = (await import('stripe')).default;
+    const { createClient } = await import('@supabase/supabase-js');
+
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }
@@ -70,3 +71,4 @@ export default async function handler(req, res) {
         res.status(500).send('Server Error');
     }
 }
+

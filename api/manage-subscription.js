@@ -1,7 +1,8 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
-
 export default async function handler(req, res) {
+    // Use dynamic imports to avoid ESM/CJS issues on Vercel
+    const Stripe = (await import('stripe')).default;
+    const { createClient } = await import('@supabase/supabase-js');
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -49,3 +50,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
+

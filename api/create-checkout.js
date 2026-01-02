@@ -1,7 +1,8 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
-
 export default async function handler(req, res) {
+    // Use dynamic imports to avoid ESM/CJS issues on Vercel
+    const Stripe = (await import('stripe')).default;
+    const { createClient } = await import('@supabase/supabase-js');
+
     console.log('[API] create-checkout: Started');
 
     if (req.method !== 'POST') {
@@ -56,3 +57,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
+
