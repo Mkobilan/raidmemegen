@@ -2,47 +2,56 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
+    console.log('[API] create-checkout: Start');
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Check environment variables inside handler to avoid top-level crashes
+    // Check environment variables
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
     const priceId = process.env.STRIPE_PRICE_ID_PRO_MONTHLY;
 
     if (!stripeSecretKey || !supabaseUrl || !supabaseAnonKey || !priceId) {
-        console.error('Missing Environment Variables:', {
-            hasStripeKey: !!stripeSecretKey,
-            hasSupabaseUrl: !!supabaseUrl,
-            hasSupabaseKey: !!supabaseAnonKey,
-            hasPriceId: !!priceId
+        console.error('[API] create-checkout: Missing Env Vars', {
+            stripe: !!stripeSecretKey,
+            url: !!supabaseUrl,
+            anon: !!supabaseAnonKey,
+            price: !!priceId
         });
-        return res.status(500).json({
-            error: 'Backend configuration error.',
-            details: 'Some required environment variables are missing on the server.'
-        });
+        return res.status(500).json({ error: 'Backend configuration missing' });
     }
 
-    const stripe = new Stripe(stripeSecretKey);
+    const stripe = new Stripe(stripeSecretKey, {
+        apiVersion: '2023-10-16', // Explicit version
+    });
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            return res.status(401).json({ error: 'Missing Authorization header' });
+            console.error('[API] create-checkout: Missing auth header');
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
         const token = authHeader.replace('Bearer ', '');
+        console.log('[API] create-checkout: Fetching user from Supabase');
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
-            return res.status(401).json({ error: 'Invalid token' });
+            console.error('[API] create-checkout: Auth error', error);
+            return res.status(401).json({ error: 'Invalid session' });
         }
 
-        const { origin } = req.body?.data || req.body || {};
-        const effectiveOrigin = origin || req.headers.origin || 'http://localhost:5173';
+        console.log('[API] create-checkout: User verified', user.id);
+
+        const bodyData = req.body?.data || req.body || {};
+        const { origin } = bodyData;
+        const effectiveOrigin = origin || req.headers.origin || 'https://raidmemegen.vercel.app';
+
+        console.log('[API] create-checkout: Creating Stripe session for', user.email);
 
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
@@ -64,9 +73,13 @@ export default async function handler(req, res) {
             },
         });
 
+        console.log('[API] create-checkout: Session created', session.id);
         return res.status(200).json({ sessionUrl: session.url });
     } catch (err) {
-        console.error('Stripe Checkout Error:', err);
-        return res.status(500).json({ error: err.message });
+        console.error('[API] create-checkout: Internal Error', err);
+        return res.status(500).json({
+            error: err.message || 'Internal Server Error',
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 }

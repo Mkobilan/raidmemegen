@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
             console.log('fetchUserData: querying profiles table...');
 
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile fetch request timed out')), 5000)
+                setTimeout(() => reject(new Error('Profile fetch request timed out')), 15000)
             );
 
             const queryPromise = supabase
