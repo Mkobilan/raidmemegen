@@ -64,9 +64,10 @@ const RaidOverlay = () => {
     }, []);
 
 
-    if (!raidData) return <div className="text-white text-4xl font-bold p-10 shadow-black drop-shadow-lg">WAITING FOR DATA...</div>;
+    if (!raidData || !raidData.phases || raidData.phases.length === 0) return <div className="text-white text-4xl font-bold p-10 shadow-black drop-shadow-lg">WAITING FOR DATA...</div>;
 
     const currentPhase = raidData.phases[activePhaseIndex];
+    if (!currentPhase) return <div className="text-white text-xl">Loading phase...</div>;
 
     // === FRAME LAYOUT RENDER ===
     if (layout === 'frame') {
@@ -134,7 +135,7 @@ const RaidOverlay = () => {
 
                             {/* Roles Ticker */}
                             <div className="flex flex-wrap gap-3 justify-end max-w-2xl">
-                                {currentPhase.roles.map((role, idx) => (
+                                {(currentPhase.roles || []).map((role, idx) => (
                                     <div key={idx} className="bg-white/10 px-3 py-1 rounded text-sm text-white font-mono border border-white/5">
                                         {role}
                                     </div>
@@ -240,7 +241,7 @@ const RaidOverlay = () => {
 
                         {/* Roles List - Horizontal Scroller if needed, or just grid */}
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 pt-4 border-t border-white/10">
-                            {currentPhase.roles.map((role, idx) => (
+                            {(currentPhase.roles || []).map((role, idx) => (
                                 <div key={idx} className="flex items-center gap-2 text-white/90">
                                     <div className="w-1.5 h-1.5 rounded-full bg-raid-neon shadow-[0_0_8px_#ff3366]" />
                                     <span className="font-mono text-sm font-semibold truncate">{role}</span>

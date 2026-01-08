@@ -523,18 +523,41 @@ const InteractiveRaidPlan = () => {
                     </motion.div>
                 ))}
             </div>
-            {/* Overlay Setup Modal */}
-            <OverlaySetupModal
-                isOpen={showOverlayModal}
-                onClose={() => setShowOverlayModal(false)}
-                raidData={plan}
-            />
 
-            <DiscordShareModal
-                isOpen={showDiscordModal}
-                onClose={() => setShowDiscordModal(false)}
-                raidData={plan}
-            />
+            {/* Overlay Setup Modal */}
+            {
+                (() => {
+                    // Ensure roles are populated for Overlay
+                    const safePlan = plan ? {
+                        ...plan,
+                        phases: plan.phases.map(p => {
+                            let roles = p.roles;
+                            if (!roles) {
+                                const rData = raidsData.find(r => r.raid === plan.raid);
+                                const pData = rData?.phases.find(ph => ph.name === p.name);
+                                roles = pData?.roles || ['Runner', 'Defender', 'Boss Bait', 'Meme Lord'];
+                            }
+                            return { ...p, roles };
+                        })
+                    } : plan;
+
+                    return (
+                        <>
+                            <OverlaySetupModal
+                                isOpen={showOverlayModal}
+                                onClose={() => setShowOverlayModal(false)}
+                                raidData={safePlan}
+                            />
+
+                            <DiscordShareModal
+                                isOpen={showDiscordModal}
+                                onClose={() => setShowDiscordModal(false)}
+                                raidData={safePlan}
+                            />
+                        </>
+                    );
+                })()
+            }
 
             {/* Game Modal */}
             <AnimatePresence>
@@ -546,7 +569,7 @@ const InteractiveRaidPlan = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 
